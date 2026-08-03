@@ -1,0 +1,378 @@
+{
+  "sections": {
+    "hero": {
+      "type": "hero",
+      "blocks": {
+        "p1": {
+          "type": "proof",
+          "settings": {
+            "value": "9x",
+            "label": "Distillations"
+          }
+        },
+        "p2": {
+          "type": "proof",
+          "settings": {
+            "value": "−9°C",
+            "label": "Filtration"
+          }
+        },
+        "p3": {
+          "type": "proof",
+          "settings": {
+            "value": "Nordic",
+            "label": "Winter wheat"
+          }
+        },
+        "t1": {
+          "type": "trust",
+          "settings": {
+            "text": "Ships in 2–4 business days"
+          }
+        },
+        "t2": {
+          "type": "trust",
+          "settings": {
+            "text": "Adult signature required"
+          }
+        },
+        "t3": {
+          "type": "trust",
+          "settings": {
+            "text": "Secure checkout"
+          }
+        }
+      },
+      "block_order": [
+        "p1",
+        "p2",
+        "p3",
+        "t1",
+        "t2",
+        "t3"
+      ],
+      "settings": {
+        "eyebrow": "Nordic winter wheat vodka",
+        "heading": "Nine distillations. One clean finish.",
+        "subheading": "Winter wheat from the sixtieth parallel, distilled nine times, then filtered at nine degrees below zero through glacial basalt. Nothing added, nothing left behind.",
+        "secondary_label": "Explore the vodka",
+        "secondary_link": "#the-vodka"
+      }
+    },
+    "product_story": {
+      "type": "product-story",
+      "blocks": {
+        "s1": {
+          "type": "spec",
+          "settings": {
+            "label": "Winter wheat",
+            "value": "Nordic"
+          }
+        },
+        "s2": {
+          "type": "spec",
+          "settings": {
+            "label": "Distillations",
+            "value": "Nine times"
+          }
+        },
+        "s3": {
+          "type": "spec",
+          "settings": {
+            "label": "Grain",
+            "value": "Winter wheat, 60th parallel"
+          }
+        },
+        "s4": {
+          "type": "spec",
+          "settings": {
+            "label": "Filtration",
+            "value": "Glacial basalt at −9°C"
+          }
+        },
+        "s5": {
+          "type": "spec",
+          "settings": {
+            "label": "Bottle",
+            "value": "750ml"
+          }
+        },
+        "s6": {
+          "type": "spec",
+          "settings": {
+            "label": "Strength",
+            "value": "40% ABV"
+          }
+        }
+      },
+      "block_order": [
+        "s1",
+        "s2",
+        "s3",
+        "s4",
+        "s5",
+        "s6"
+      ],
+      "settings": {
+        "anchor": "the-vodka",
+        "eyebrow": "The Winter Wheat",
+        "heading": "Clarity is subtraction, not addition.",
+        "body": "<p>Nine Below is distilled from winter wheat grown above the sixtieth parallel, where the cold slows the grain and concentrates the starch.</p><p>It runs through the column nine times, then rests against glacial basalt at nine degrees below zero. Cold filtration strips the harshness that carbon alone leaves behind. No sugar, no glycerol, no citrus masking.</p>"
+      }
+    },
+    "tasting": {
+      "type": "tasting-notes",
+      "blocks": {
+        "n1": {
+          "type": "note",
+          "settings": {
+            "title": "Nose",
+            "body": "Almost silent at first. Cold grain, a trace of white pepper, then a faint sweetness like wet stone.",
+            "descriptors": "Cold grain, White pepper, Wet stone, Cream"
+          }
+        },
+        "n2": {
+          "type": "note",
+          "settings": {
+            "title": "Palate",
+            "body": "Full and rounded rather than sharp. The wheat gives a soft cereal weight that carries the alcohol instead of hiding behind it.",
+            "descriptors": "Soft cereal, Vanilla, Sea salt, Anise"
+          }
+        },
+        "n3": {
+          "type": "note",
+          "settings": {
+            "title": "Filtration",
+            "body": "Short and clean by design. No burn, no lingering sweetness — the glass should read empty.",
+            "descriptors": "Clean, Brief, Mineral"
+          }
+        }
+      },
+      "block_order": [
+        "n1",
+        "n2",
+        "n3"
+      ],
+      "settings": {
+        "anchor": "tasting",
+        "eyebrow": "Tasting",
+        "heading": "How it drinks",
+        "intro": "Best judged cold but not frozen solid — about −5°C, in a small stemmed glass.",
+        "disclaimer": "Placeholder notes — replace with the distiller's official tasting panel before launch."
+      }
+    },
+    "craft": {
+      "type": "craft-process",
+      "blocks": {
+        "c1": {
+          "type": "step",
+          "settings": {
+            "span": "Autumn",
+            "title": "Nordic distillation",
+            "body": "Distilled in the Nordic, then laid down without colouring or added sugar."
+          }
+        },
+        "c2": {
+          "type": "step",
+          "settings": {
+            "span": "Winter",
+            "title": "Mash and ferment",
+            "body": "A slow, cool ferment over five days. Speed makes esters; patience makes a neutral, clean wash."
+          }
+        },
+        "c3": {
+          "type": "step",
+          "settings": {
+            "span": "The ninth pass",
+            "title": "Nine distillations",
+            "body": "Nine passes through the column. Each one narrows the cut and takes a little more away — the last is almost entirely discarded."
+          }
+        },
+        "c4": {
+          "type": "step",
+          "settings": {
+            "span": "Bottling",
+            "title": "Sub-zero filtration",
+            "body": "Chilled to −9°C and passed through glacial basalt, then bottled without dilution beyond proofing water."
+          }
+        }
+      },
+      "block_order": [
+        "c1",
+        "c2",
+        "c3",
+        "c4"
+      ],
+      "settings": {
+        "anchor": "craft",
+        "eyebrow": "The craft",
+        "heading": "Nine passes, one temperature",
+        "intro": "Every step here removes something. None of them add."
+      }
+    },
+    "serve": {
+      "type": "serve",
+      "blocks": {
+        "v1": {
+          "type": "serve",
+          "settings": {
+            "title": "From the freezer",
+            "method": "Keep the bottle in the freezer. Pour into a chilled glass and drink within a few minutes, before it warms.",
+            "ingredients": "60ml Nine Below Winter Wheat"
+          }
+        },
+        "v2": {
+          "type": "serve",
+          "settings": {
+            "title": "Dry Martini",
+            "method": "Stir hard over ice for thirty seconds, strain into a frozen coupe, twist a wide lemon peel over the top.",
+            "ingredients": "60ml Nine Below Winter Wheat\n10ml dry vermouth\nLemon peel\nOlive, if you must"
+          }
+        },
+        "v3": {
+          "type": "serve",
+          "settings": {
+            "title": "Soda and lime",
+            "method": "Build over plenty of ice in a tall glass. Add the lime last so the oils sit on top.",
+            "ingredients": "50ml Nine Below Winter Wheat\n120ml chilled soda water\nFresh lime wedge"
+          }
+        }
+      },
+      "block_order": [
+        "v1",
+        "v2",
+        "v3"
+      ],
+      "settings": {
+        "anchor": "serve",
+        "eyebrow": "Serve",
+        "heading": "Three ways to serve it",
+        "intro": "Clean enough to drink cold and plain, structured enough to hold a stirred drink."
+      }
+    },
+    "proof": {
+      "type": "social-proof",
+      "blocks": {
+        "q1": {
+          "type": "quote",
+          "settings": {
+            "quote": "Almost nothing on the nose, and that is the point. The wheat only shows once it warms in the glass.",
+            "source": "The Nordic Spirits Review",
+            "detail": "Fictional publication — mock content"
+          }
+        },
+        "q2": {
+          "type": "quote",
+          "settings": {
+            "quote": "A vodka built by removal rather than addition. The finish is over almost before you notice it.",
+            "source": "Cold Cellar Quarterly",
+            "detail": "Fictional publication — mock content"
+          }
+        },
+        "q3": {
+          "type": "quote",
+          "settings": {
+            "quote": "Sub-zero filtration is not new. Doing it nine times and admitting what it costs is.",
+            "source": "Grain & Glass",
+            "detail": "Fictional publication — mock content"
+          }
+        }
+      },
+      "block_order": [
+        "q1",
+        "q2",
+        "q3"
+      ],
+      "settings": {
+        "anchor": "proof",
+        "eyebrow": "Mock press — fictional brand",
+        "heading": "What the (invented) critics said"
+      }
+    },
+    "faq": {
+      "type": "faq",
+      "blocks": {
+        "q1": {
+          "type": "qa",
+          "settings": {
+            "question": "Where do you ship?",
+            "answer": "<p>Orders are fulfilled by our licensed retail partner through BottleNexus. Available destinations are confirmed at checkout — spirits shipping is regulated state by state, so a small number of addresses cannot be served. Confirm and list your live states here before launch.</p>"
+          }
+        },
+        "q2": {
+          "type": "qa",
+          "settings": {
+            "question": "How long does delivery take?",
+            "answer": "<p>Typically 2–4 business days after the order is released, depending on destination. You will receive tracking by email once it ships.</p>"
+          }
+        },
+        "q3": {
+          "type": "qa",
+          "settings": {
+            "question": "Does someone need to sign for it?",
+            "answer": "<p>Yes. An adult aged 21 or over must be present with valid ID to accept the delivery. Carriers cannot leave alcohol unattended.</p>"
+          }
+        },
+        "q4": {
+          "type": "qa",
+          "settings": {
+            "question": "What if the bottle arrives damaged?",
+            "answer": "<p>Contact us within 48 hours of delivery with a photograph and we will arrange a replacement or refund through our fulfilment partner.</p>"
+          }
+        },
+        "q5": {
+          "type": "qa",
+          "settings": {
+            "question": "Is this a limited release?",
+            "answer": "<p>The winter release is bottled once a year from a single harvest. Add real allocation numbers here once confirmed — do not imply scarcity you cannot substantiate.</p>"
+          }
+        },
+        "q6": {
+          "type": "qa",
+          "settings": {
+            "question": "How should I store it?",
+            "answer": "<p>The freezer is fine and arguably preferable. Vodka will not freeze at this strength, and an opened bottle keeps almost indefinitely.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "q1",
+        "q2",
+        "q3",
+        "q4",
+        "q5",
+        "q6"
+      ],
+      "settings": {
+        "anchor": "faq",
+        "eyebrow": "Questions",
+        "heading": "Before you order",
+        "cta_text": "Ready when you are."
+      }
+    },
+    "updates": {
+      "type": "email-capture",
+      "settings": {
+        "anchor": "updates",
+        "eyebrow": "Allocation list",
+        "heading": "Get first access to the next release",
+        "body": "The Winter Wheat is limited. Join the list and we will email you before the next bottling goes public — no more than a few times a year.",
+        "placeholder": "you@example.com",
+        "button_label": "Join the list",
+        "consent_text": "By joining you confirm you are of legal drinking age and agree to receive email from Nine Below. Unsubscribe any time.",
+        "success_text": "You're on the list. Watch your inbox.",
+        "error_text": "Something went wrong. Please try again."
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "product_story",
+    "tasting",
+    "craft",
+    "serve",
+    "proof",
+    "faq",
+    "updates"
+  ]
+}

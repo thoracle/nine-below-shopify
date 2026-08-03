@@ -1,0 +1,85 @@
+{%- comment -%}
+  Focused paid-social flow.
+
+  Someone arriving from an Instagram or TikTok ad has one job: decide on this
+  product. Every nav link, footer column and secondary CTA is an exit that costs
+  you a click you already paid for. This strips the page to the buy path.
+
+  Like the A/B assignment, it resolves INLINE in <head> before paint — otherwise
+  the full nav renders and then vanishes, which looks broken and is worse than
+  leaving it in.
+
+  Triggered by:
+    · ?flow=focus (explicit — use this in ad links you fully control)
+    · utm_source matching the configured list (instagram, tiktok, facebook…)
+    · Referrer matching those platforms, as a fallback for stripped params
+
+  Held in sessionStorage, so internal navigation stays in the flow but a return
+  visit next week starts clean.
+
+  What it NEVER hides: the age gate, the responsibility statement, the legal
+  purchase notice, and the privacy/terms links. Those are compliance, not
+  navigation, and removing them to lift conversion is not a trade worth making.
+{%- endcomment -%}
+
+{%- if settings.flow_enabled -%}
+<script>
+  (function () {
+    'use strict';
+
+    var KEY = 'nb_flow';
+    var root = document.documentElement;
+    var sources = {{ settings.flow_sources | default: 'instagram,ig,tiktok,facebook,meta,fb' | split: ',' | json }};
+
+    function norm(s) { return String(s || '').trim().toLowerCase(); }
+    var list = sources.map(norm).filter(Boolean);
+
+    var qs = new URLSearchParams(location.search);
+    var mode = null;
+
+    // 1. Explicit — highest confidence, and what you should put in ad links.
+    var flow = norm(qs.get('flow'));
+    if (flow === 'focus' || flow === 'ig' || flow === 'social') mode = 'focus';
+    if (flow === 'full' || flow === 'off') mode = 'full';
+
+    // 2. Campaign parameters.
+    if (!mode) {
+      var src = norm(qs.get('utm_source'));
+      var med = norm(qs.get('utm_medium'));
+      if (src && list.indexOf(src) !== -1) mode = 'focus';
+      else if (med && list.indexOf(med) !== -1) mode = 'focus';
+    }
+
+    // 3. Referrer, for in-app browsers that drop query params.
+    if (!mode && document.referrer) {
+      var host = '';
+      try { host = new URL(document.referrer).hostname.toLowerCase(); } catch (e) {}
+      if (host) {
+        for (var i = 0; i < list.length; i++) {
+          if (list[i] && host.indexOf(list[i]) !== -1) { mode = 'focus'; break; }
+        }
+      }
+    }
+
+    // 4. Otherwise inherit whatever this session already decided.
+    if (!mode) {
+      try { mode = sessionStorage.getItem(KEY); } catch (e) {}
+    }
+
+    if (mode === 'full') {
+      try { sessionStorage.removeItem(KEY); } catch (e) {}
+      mode = null;
+    }
+
+    if (mode === 'focus') {
+      root.setAttribute('data-flow', 'focus');
+      try { sessionStorage.setItem(KEY, 'focus'); } catch (e) {}
+    }
+
+    window.NINEBELOW_FLOW = {
+      mode: mode || 'full',
+      isFocus: mode === 'focus'
+    };
+  })();
+</script>
+{%- endif -%}

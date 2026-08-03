@@ -1,0 +1,49 @@
+{%- comment -%}
+  BottleNexus buy button mount point.
+
+  Params:
+    location  — where this instance lives (hero / sticky / header / product).
+                Passed straight through to GA4 so we can tell which placement
+                actually earns the click.
+    size      — 'lg' | 'md' | 'sm'
+    full      — true to stretch to container width
+
+  The visible button is rendered by the theme, not by the vendor script. The
+  live site swaps a greyed-out preloader for a vendor-rendered button once
+  buybutton.min.js resolves, which means the primary CTA is dead for the first
+  few hundred ms and shifts layout when it arrives. Here the real button paints
+  immediately and simply queues clicks until the SDK is ready.
+{%- endcomment -%}
+
+{%- liquid
+  assign loc  = location | default: 'hero'
+  assign size = size | default: 'lg'
+  assign is_full = full | default: false
+-%}
+
+<div class="buybtn buybtn--{{ size }}{% if is_full %} buybtn--full{% endif %}"
+     data-buy-root
+     data-location="{{ loc }}">
+
+  <button type="button"
+          class="btn btn--primary buybtn__btn"
+          data-buy-trigger
+          data-location="{{ loc }}"
+          aria-label="{{ settings.bn_button_text | escape }} — {{ settings.product_name | escape }}">
+    <span class="buybtn__label">{{ settings.bn_button_text }}</span>
+    {%- if settings.product_price != blank -%}
+      <span class="buybtn__sep" aria-hidden="true">·</span>
+      <span class="buybtn__price">
+        {{ settings.product_currency | replace: 'USD', '$' }}{{ settings.product_price }}
+      </span>
+    {%- endif -%}
+    <span class="buybtn__spinner" aria-hidden="true"></span>
+  </button>
+
+  {%- comment -%} Vendor script mounts here when demo mode is off. {%- endcomment -%}
+  <div class="buybtn__vendor" data-buy-vendor-slot hidden></div>
+
+  {%- if loc != 'sticky' and loc != 'header' -%}
+    <p class="buybtn__legal">{{ settings.legal_note }}</p>
+  {%- endif -%}
+</div>

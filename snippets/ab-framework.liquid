@@ -1,0 +1,172 @@
+{%- comment -%}
+  A/B framework — assignment layer.
+
+  This runs INLINE AND BLOCKING in <head>, before first paint. That is the whole
+  point: if variants were chosen after paint, every visitor in arm B would see a
+  flash of arm A first. That flash biases the result — you would be measuring
+  "saw A then B" against "saw B", which is not the test you designed.
+
+  Order of operations, all before the body parses:
+    1. Read the experiment registry (theme setting, JSON).
+    2. Restore this visitor's prior assignments, or bucket them.
+    3. Stamp `data-ab-<experiment>` on <html>.
+    4. Emit CSS that hides the variants this visitor did NOT get.
+
+  Step 4 hides losers rather than hiding everything and revealing the winner.
+  Reveal-the-winner needs `display: revert`, which throws away whatever display
+  value the element actually wanted (grid, flex, inline). Hiding losers leaves
+  the winner's own styling untouched.
+
+  Marking up a variant, anywhere in the theme:
+
+      <h1 data-ab="hero_headline:a">Nine distillations.</h1>
+      <h1 data-ab="hero_headline:b">Nine below zero.</h1>
+
+  Layout tests need no markup duplication — the `data-ab-<id>` attribute on
+  <html> is a styling hook:
+
+      :root[data-ab-hero_layout="b"] .hero__inner { grid-template-columns: 1fr; }
+{%- endcomment -%}
+
+{%- if settings.ab_enabled -%}
+  {%- comment -%}
+    There is deliberately no "hide everything first" rule here. This script is
+    blocking and sits above <body>, so the hide-losers stylesheet is already in
+    the document before a single variant element parses — nothing can flash.
+    A blanket rule would also mean a visitor with JS disabled sees NO variant at
+    all; without it they simply see every arm, which is degraded but not broken.
+  {%- endcomment -%}
+  <script id="ab-registry" type="application/json">{{ settings.ab_experiments | strip_newlines }}</script>
+
+  <script>
+  (function () {
+    'use strict';
+
+    var STORE = 'nb_ab_v1';
+    var COOKIE = 'nb_ab';
+    var root = document.documentElement;
+
+    var registry = {};
+    try {
+      registry = JSON.parse(document.getElementById('ab-registry').textContent) || {};
+    } catch (e) {
+      // A malformed registry must not take the page down — fail to control.
+      if (window.console) console.warn('[AB] registry is not valid JSON; all experiments disabled.');
+      registry = {};
+    }
+
+    /* ---- stored assignments ------------------------------------------- */
+    var stored = {};
+    try { stored = JSON.parse(localStorage.getItem(STORE)) || {}; } catch (e) { stored = {}; }
+
+    /* ---- QA overrides -------------------------------------------------
+       ?ab=reset               clear everything and re-bucket
+       ?ab=hero_headline:b     force one or more arms, comma separated
+       Overrides persist, so you can click through a whole funnel in one arm. */
+    var qs = new URLSearchParams(location.search);
+    var override = qs.get('ab');
+    if (override === 'reset') {
+      stored = {};
+    } else if (override) {
+      override.split(',').forEach(function (pair) {
+        var bits = pair.split(':');
+        if (bits.length === 2) stored[bits[0].trim()] = bits[1].trim();
+      });
+    }
+
+    /* ---- weighted pick ------------------------------------------------- */
+    function pick(variants) {
+      var names = Object.keys(variants);
+      var total = 0, i;
+      for (i = 0; i < names.length; i++) total += Number(variants[names[i]]) || 0;
+      if (total <= 0) return names[0];
+      var r = Math.random() * total;
+      for (i = 0; i < names.length; i++) {
+        r -= Number(variants[names[i]]) || 0;
+        if (r <= 0) return names[i];
+      }
+      return names[names.length - 1];
+    }
+
+    var active = {};   // experiment -> variant, for experiments this visitor is IN
+    var hide = [];     // CSS selectors for variants this visitor did NOT get
+
+    Object.keys(registry).forEach(function (id) {
+      var exp = registry[id] || {};
+      var variants = exp.variants || {};
+      var names = Object.keys(variants);
+      if (!names.length) return;
+
+      var control = names[0];
+
+      if (exp.enabled === false) {
+        // Switched off: everyone sees the control, and nothing is reported.
+        active[id] = null;
+        root.setAttribute('data-ab-' + id, control);
+        names.forEach(function (v) { if (v !== control) hide.push('[data-ab="' + id + ':' + v + '"]'); });
+        return;
+      }
+
+      var assigned = stored[id];
+
+      if (!assigned) {
+        // Traffic allocation: hold part of the audience out of the experiment
+        // entirely. Held-out visitors see the control and are excluded from
+        // reporting, so a partial rollout doesn't dilute the measured effect.
+        var traffic = exp.traffic == null ? 100 : Number(exp.traffic);
+        if (Math.random() * 100 >= traffic) {
+          assigned = '__holdout__';
+        } else {
+          assigned = pick(variants);
+        }
+        stored[id] = assigned;
+      }
+
+      var shown = assigned === '__holdout__' ? control : assigned;
+      active[id] = assigned === '__holdout__' ? null : assigned;
+
+      root.setAttribute('data-ab-' + id, shown);
+      names.forEach(function (v) {
+        if (v !== shown) hide.push('[data-ab="' + id + ':' + v + '"]');
+      });
+    });
+
+    /* ---- persist ------------------------------------------------------- */
+    try { localStorage.setItem(STORE, JSON.stringify(stored)); } catch (e) {}
+    try {
+      // Mirrored to a cookie so assignments can be joined server-side or in
+      // exports later. localStorage stays the source of truth.
+      var flat = Object.keys(stored).map(function (k) { return k + ':' + stored[k]; }).join('|');
+      document.cookie = COOKIE + '=' + encodeURIComponent(flat) +
+        ';path=/;max-age=' + (60 * 60 * 24 * 90) + ';SameSite=Lax';
+    } catch (e) {}
+
+    /* ---- hide the losers before anything paints ------------------------ */
+    if (hide.length) {
+      var s = document.createElement('style');
+      s.id = 'ab-hide';
+      s.textContent = hide.join(',') + '{display:none !important}';
+      document.head.appendChild(s);
+    }
+
+    /* ---- surface for analytics.js and ab.js ---------------------------- */
+    window.NINEBELOW_AB = {
+      registry: registry,
+      assignments: stored,
+      active: active,               // holdouts are null — never reported
+      get: function (id) { return active[id] || null; },
+      params: function () {
+        // Flat params merged onto every GA4 event downstream.
+        var out = {}, list = [];
+        Object.keys(active).forEach(function (id) {
+          if (!active[id]) return;
+          out['ab_' + id] = active[id];
+          list.push(id + ':' + active[id]);
+        });
+        if (list.length) out.ab_variants = list.sort().join('|');
+        return out;
+      }
+    };
+  })();
+  </script>
+{%- endif -%}

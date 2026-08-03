@@ -1,0 +1,150 @@
+{%- comment -%}
+  Age gate — two arms, one experiment.
+
+  Arm A (control): a single yes/no tap, remembered for `age_gate_remember_days`.
+  Arm B (challenger): the date-of-birth form that is the category default —
+  three numeric fields, "Confirm & Enter", and a hard stop for anyone under age.
+
+  Arm B exists so the friction can be *measured* rather than argued about, and
+  it is deliberately the plain industry form rather than a nicer one — the point
+  is to measure what the category already does, not a redesign of it.
+  `age_gate_min_age` is a single number because this site is US-only; a country
+  lookup would change what the test measures (region blocking, not form friction)
+  without changing what US visitors experience.
+
+  Which arm renders is decided by `data-ab-age_gate` on <html>, stamped by
+  ab-framework.liquid before first paint. That attribute drives BOTH the CSS
+  below and the JS in theme.js, so the two can never disagree about which arm
+  is live. With the experiment absent or parked, arm A renders — the safe
+  default is always the low-friction gate.
+{%- endcomment -%}
+
+{%- comment -%}
+  No `hidden` attribute. The gate is visible by default and is taken away by
+  `data-age="ok"` — see age-gate-head.liquid. Shipping it hidden meant the site
+  painted first and the gate arrived afterwards, if at all.
+{%- endcomment -%}
+<div class="age-gate" id="age-gate" role="dialog" aria-modal="true"
+     aria-label="Age verification">
+  <div class="age-gate__bg" aria-hidden="true"></div>
+
+  <noscript>
+    <div class="age-gate__panel">
+      <div class="age-gate__inner">
+        <div class="age-gate__wordmark">Nine Below</div>
+        <h1 class="age-gate__heading">{{ settings.age_gate_heading }}</h1>
+        <p class="age-gate__legal">
+          Confirming your age needs JavaScript, which is turned off in this
+          browser. Please enable it and reload.
+        </p>
+      </div>
+    </div>
+  </noscript>
+
+  <div class="age-gate__panel">
+
+    {%- comment -%} ---------- Arm A — one tap ---------- {%- endcomment -%}
+    <div class="age-gate__arm" data-gate-arm="a">
+      <div class="age-gate__inner" data-gate-step="ask">
+        {%- if settings.logo != blank -%}
+          <img class="age-gate__logo"
+               src="{{ settings.logo | image_url: width: 420 }}"
+               alt="{{ shop.name | escape }}" width="210" height="auto">
+        {%- else -%}
+          <div class="age-gate__wordmark">Nine Below</div>
+        {%- endif -%}
+
+        <h1 class="age-gate__heading" id="age-gate-heading-a">
+          {{ settings.age_gate_heading }}
+        </h1>
+
+        <div class="age-gate__actions">
+          <button type="button" class="btn btn--primary" data-gate-confirm>Yes</button>
+          <button type="button" class="btn btn--ghost" data-gate-deny>No</button>
+        </div>
+
+        <p class="age-gate__legal">
+          By entering you agree to our
+          <a href="/pages/terms-of-use">Terms of Use</a> and
+          <a href="/pages/privacy-policy">Privacy Policy</a>.
+        </p>
+      </div>
+
+      <div class="age-gate__inner age-gate__inner--deny" data-gate-step="deny" hidden>
+        <h2 class="age-gate__heading">{{ settings.age_gate_deny_text }}</h2>
+        <button type="button" class="btn btn--ghost" data-gate-back>Go back</button>
+      </div>
+    </div>
+
+    {%- comment -%} ---------- Arm B — date of birth ---------- {%- endcomment -%}
+    <div class="age-gate__arm" data-gate-arm="b">
+      <div class="age-gate__inner" data-gate-step="ask">
+        {%- if settings.logo != blank -%}
+          <img class="age-gate__logo"
+               src="{{ settings.logo | image_url: width: 420 }}"
+               alt="{{ shop.name | escape }}" width="210" height="auto">
+        {%- else -%}
+          <div class="age-gate__wordmark">Nine Below</div>
+        {%- endif -%}
+
+        {%- if settings.age_gate_dob_eyebrow != blank -%}
+          <p class="age-gate__eyebrow">{{ settings.age_gate_dob_eyebrow }}</p>
+        {%- endif -%}
+
+        <h1 class="age-gate__heading" id="age-gate-heading-b">
+          {{ settings.age_gate_dob_heading }}
+        </h1>
+
+        {%- comment -%}
+          novalidate: the browser's own bubble would fire before the script can
+          count the age, so the visitor would see two different error styles for
+          two different failures. One error surface, one voice.
+        {%- endcomment -%}
+        <form class="dob" data-gate-form autocomplete="off" novalidate>
+          <div class="dob__fields">
+            <label class="dob__field">
+              <span class="dob__label">Month</span>
+              <input class="dob__input" data-gate-mm type="text" inputmode="numeric"
+                     pattern="[0-9]*" maxlength="2" placeholder="MM"
+                     aria-label="Birth month" required>
+            </label>
+            <label class="dob__field">
+              <span class="dob__label">Day</span>
+              <input class="dob__input" data-gate-dd type="text" inputmode="numeric"
+                     pattern="[0-9]*" maxlength="2" placeholder="DD"
+                     aria-label="Birth day" required>
+            </label>
+            <label class="dob__field">
+              <span class="dob__label">Birth year</span>
+              <input class="dob__input" data-gate-yyyy type="text" inputmode="numeric"
+                     pattern="[0-9]*" maxlength="4" placeholder="YYYY"
+                     aria-label="Birth year" required>
+            </label>
+          </div>
+
+          <p class="dob__error" data-gate-error role="alert" hidden></p>
+
+          <button type="submit" class="btn btn--primary btn--block">
+            {{ settings.age_gate_dob_cta }}
+          </button>
+        </form>
+
+        <p class="age-gate__legal">
+          By entering you agree to our
+          <a href="/pages/terms-of-use">Terms of Use</a> and
+          <a href="/pages/privacy-policy">Privacy Policy</a>.
+        </p>
+      </div>
+
+      {%- comment -%}
+        No "go back" here, matching the live site: a visitor who has entered a
+        birthdate under the legal age is done. Arm A can offer a way back
+        because a mis-tap is plausible; a typed date is a stated answer.
+      {%- endcomment -%}
+      <div class="age-gate__inner age-gate__inner--deny" data-gate-step="deny" hidden>
+        <h2 class="age-gate__heading">{{ settings.age_gate_deny_text }}</h2>
+      </div>
+    </div>
+
+  </div>
+</div>

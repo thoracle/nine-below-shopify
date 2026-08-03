@@ -1,0 +1,76 @@
+{%- liquid
+  assign h_font = settings.font_heading
+  assign b_font = settings.font_body
+  assign h_bold = h_font | font_modify: 'weight', 'bold'
+  assign b_bold = b_font | font_modify: 'weight', 'bold'
+  assign b_med  = b_font | font_modify: 'weight', '500'
+-%}
+
+{% style %}
+  {{ h_font | font_face: font_display: 'swap' }}
+  {{ h_bold | font_face: font_display: 'swap' }}
+  {{ b_font | font_face: font_display: 'swap' }}
+  {{ b_med  | font_face: font_display: 'swap' }}
+  {{ b_bold | font_face: font_display: 'swap' }}
+
+  :root {
+    /* Palette */
+    --ink:          {{ settings.color_ink }};
+    --ink-deep:     {{ settings.color_ink_deep }};
+    --cream:        {{ settings.color_cream }};
+    --accent:       {{ settings.color_accent }};
+    --accent-hover: {{ settings.color_accent_hover }};
+    --muted:        {{ settings.color_muted }};
+    --light:        {{ settings.color_light }};
+    --on-light:     {{ settings.color_on_light }};
+
+    --cream-08: {{ settings.color_cream | color_modify: 'alpha', 0.08 }};
+    --cream-16: {{ settings.color_cream | color_modify: 'alpha', 0.16 }};
+    --cream-40: {{ settings.color_cream | color_modify: 'alpha', 0.40 }};
+    --cream-70: {{ settings.color_cream | color_modify: 'alpha', 0.70 }};
+    --ink-90:   {{ settings.color_ink | color_modify: 'alpha', 0.90 }};
+    --ink-60:   {{ settings.color_ink | color_modify: 'alpha', 0.60 }};
+
+    /* Type */
+    --font-heading: {{ h_font.family }}, {{ h_font.fallback_families }};
+    --font-body:    {{ b_font.family }}, {{ b_font.fallback_families }};
+    --fw-heading:   {{ h_font.weight }};
+    --fw-body:      {{ b_font.weight }};
+
+    --scale-h: {{ settings.heading_scale | divided_by: 100.0 }};
+    --scale-b: {{ settings.body_scale | divided_by: 100.0 }};
+
+    /* Fluid type — clamp() so nothing needs a media query to stay readable.
+       Tuned for a 700-weight grotesque, which sets much wider than a serif at
+       the same size — a cap tuned for a serif ran to three lines here and pushed
+       the buy button below the fold. */
+    --fs-display: calc(clamp(2.1rem, 1.1rem + 3.2vw, 3.9rem) * var(--scale-h));
+    --fs-h1:      calc(clamp(2.25rem, 1.4rem + 3.6vw, 4.25rem) * var(--scale-h));
+    --fs-h2:      calc(clamp(1.75rem, 1.2rem + 2.2vw, 3rem)    * var(--scale-h));
+    --fs-h3:      calc(clamp(1.3rem,  1.1rem + 0.9vw, 1.85rem) * var(--scale-h));
+    --fs-body:    calc(clamp(1rem,    0.96rem + 0.2vw, 1.125rem) * var(--scale-b));
+    --fs-lead:    calc(clamp(1.1rem,  1rem + 0.6vw, 1.4rem)    * var(--scale-b));
+    --fs-small:   calc(0.875rem * var(--scale-b));
+    --fs-eyebrow: calc(0.78rem * var(--scale-b));
+
+    /* Space */
+    --gutter:  clamp(1.25rem, 4vw, 3rem);
+    --section: clamp(4rem, 9vw, 8.5rem);
+    --maxw:    1280px;
+    --maxw-narrow: 780px;
+
+    --radius: 2px;
+    --border: 1px solid var(--cream-16);
+
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --dur: 520ms;
+
+    --header-h: 72px;
+    --stickybar-h: 0px;
+  }
+
+  @media (max-width: 749px) {
+    :root { --header-h: 60px; }
+    body.has-sticky-bar { --stickybar-h: 76px; }
+  }
+{% endstyle %}

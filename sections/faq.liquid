@@ -1,0 +1,132 @@
+{%- comment -%}
+  FAQ.
+
+  On DTC spirits the top cart-abandonment causes are shipping questions: where
+  you ship, what it costs, whether someone must sign, what happens if it breaks.
+  None of that is answerable anywhere on the current site. Answering it inline,
+  next to the buy button, removes the reason to leave and go looking.
+
+  FAQPage structured data is emitted for rich results.
+{%- endcomment -%}
+
+<section class="section section--faq" id="{{ section.settings.anchor | default: 'faq' }}"
+         data-section-name="faq">
+  <div class="wrap wrap--narrow">
+    <header class="section__head section__head--center">
+      <p class="eyebrow">{{ section.settings.eyebrow }}</p>
+      <h2 class="h2">{{ section.settings.heading }}</h2>
+    </header>
+
+    <div class="faq">
+      {%- for block in section.blocks -%}
+        <details class="faq__item" {{ block.shopify_attributes }}
+                 data-faq-item data-question="{{ block.settings.question | escape }}">
+          <summary class="faq__q">
+            <span>{{ block.settings.question }}</span>
+            <span class="faq__icon" aria-hidden="true"></span>
+          </summary>
+          <div class="faq__a rte">{{ block.settings.answer }}</div>
+        </details>
+      {%- endfor -%}
+    </div>
+
+    <div class="faq__cta">
+      <p>{{ section.settings.cta_text }}</p>
+      {% render 'buy-button', location: 'faq', size: 'md' %}
+    </div>
+  </div>
+</section>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {%- assign first = true -%}
+    {%- for block in section.blocks -%}
+      {%- if block.settings.question != blank -%}
+        {%- unless first %},{% endunless -%}
+        {
+          "@type": "Question",
+          "name": {{ block.settings.question | json }},
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": {{ block.settings.answer | strip_html | strip | json }}
+          }
+        }
+        {%- assign first = false -%}
+      {%- endif -%}
+    {%- endfor -%}
+  ]
+}
+</script>
+
+{% schema %}
+{
+  "name": "FAQ",
+  "settings": [
+    { "type": "text", "id": "anchor", "label": "Anchor ID", "default": "faq" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Questions" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Before you order" },
+    { "type": "text", "id": "cta_text", "label": "CTA text", "default": "Ready when you are." }
+  ],
+  "blocks": [
+    {
+      "type": "qa",
+      "name": "Question",
+      "settings": [
+        { "type": "text", "id": "question", "label": "Question" },
+        { "type": "richtext", "id": "answer", "label": "Answer" }
+      ]
+    }
+  ],
+  "default": {
+    "settings": {},
+    "blocks": [
+      {
+        "type": "qa",
+        "settings": {
+          "question": "Where do you ship?",
+          "answer": "<p>Orders are fulfilled by our licensed retail partner through BottleNexus. Available destinations are confirmed at checkout — spirits shipping is regulated state by state, so a small number of addresses cannot be served. Confirm and list your live states here before launch.</p>"
+        }
+      },
+      {
+        "type": "qa",
+        "settings": {
+          "question": "How long does delivery take?",
+          "answer": "<p>Typically 2–4 business days after the order is released, depending on destination. You will receive tracking by email once it ships.</p>"
+        }
+      },
+      {
+        "type": "qa",
+        "settings": {
+          "question": "Does someone need to sign for it?",
+          "answer": "<p>Yes. An adult aged 21 or over must be present with valid ID to accept the delivery. Carriers cannot leave alcohol unattended.</p>"
+        }
+      },
+      {
+        "type": "qa",
+        "settings": {
+          "question": "What if the bottle arrives damaged?",
+          "answer": "<p>Contact us within 48 hours of delivery with a photograph and we will arrange a replacement or refund through our fulfilment partner.</p>"
+        }
+      },
+      {
+        "type": "qa",
+        "settings": {
+          "question": "Is this a limited release?",
+          "answer": "<p>The winter release is bottled once a year from a single harvest. Add real allocation numbers here once confirmed — do not imply scarcity you cannot substantiate.</p>"
+        }
+      },
+      {
+        "type": "qa",
+        "settings": {
+          "question": "How should I store it?",
+          "answer": "<p>The freezer is fine and arguably preferable. Vodka will not freeze at this strength, and an opened bottle keeps almost indefinitely.</p>"
+        }
+      }
+    ]
+  },
+  "presets": [{ "name": "FAQ" }]
+}
+{% endschema %}

@@ -1,0 +1,1142 @@
+/* =========================================================================
+   Nine Below Vodka — conversion theme
+   Single stylesheet, no framework. Variables come from snippets/css-variables.
+   ========================================================================= */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--header-h) + 16px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--cream);
+  font-family: var(--font-body);
+  font-weight: var(--fw-body);
+  font-size: var(--fs-body);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Scroll locking while gated is done by the blocking stylesheet in
+   age-gate-head.liquid, so it applies with JS off too. */
+body.nav-open { overflow: hidden; }
+
+img, picture, video, svg { max-width: 100%; height: auto; display: block; }
+
+a { color: inherit; text-decoration-color: var(--cream-40); text-underline-offset: 3px; }
+a:hover { text-decoration-color: currentColor; }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: var(--radius);
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0);
+  white-space: nowrap; border: 0;
+}
+
+.skip-link {
+  position: absolute; left: -9999px; top: 0; z-index: 999;
+  background: var(--accent); color: #fff;
+  padding: 12px 20px; font-size: var(--fs-small);
+}
+.skip-link:focus { left: 8px; top: 8px; }
+
+/* ---------- Layout ---------- */
+
+.wrap {
+  width: 100%;
+  max-width: var(--maxw);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+.wrap--narrow { max-width: var(--maxw-narrow); }
+
+.wrap--split {
+  display: grid;
+  gap: clamp(2rem, 5vw, 4.5rem);
+  align-items: center;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 900px) {
+  .wrap--split { grid-template-columns: 0.9fr 1.1fr; }
+}
+
+.section { padding-block: var(--section); position: relative; }
+.section--vodka { background: var(--ink-deep); }
+.section--craft { background: var(--ink-deep); }
+.section--signup {
+  background: var(--light);
+  color: var(--on-light);
+}
+
+.section__head { margin-bottom: clamp(2rem, 4vw, 3.5rem); max-width: 62ch; }
+.section__head--center { margin-inline: auto; text-align: center; }
+
+/* ---------- Type ---------- */
+
+h1, h2, h3, .h1, .h2, .h3 {
+  font-family: var(--font-heading);
+  font-weight: var(--fw-heading);
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  margin: 0 0 0.5em;
+  text-wrap: balance;
+}
+
+.h2 { font-size: var(--fs-h2); }
+.h3 { font-size: var(--fs-h3); }
+
+.eyebrow {
+  font-size: var(--fs-eyebrow);
+  letter-spacing: 0.22em;
+  color: var(--muted);
+  margin: 0 0 1rem;
+  font-weight: 500;
+}
+body:not(.no-uppercase) .eyebrow { text-transform: uppercase; }
+
+.lead {
+  font-size: var(--fs-lead);
+  color: var(--cream-70);
+  margin: 0 0 1.25rem;
+  text-wrap: pretty;
+}
+.section--signup .lead { color: color-mix(in srgb, var(--on-light) 72%, transparent); }
+
+.rte p { margin: 0 0 1.1em; color: var(--cream-70); text-wrap: pretty; }
+.rte p:last-child { margin-bottom: 0; }
+.rte a { color: var(--cream); }
+
+/* ---------- Buttons ---------- */
+
+.btn {
+  --btn-pad-y: 1rem;
+  --btn-pad-x: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55em;
+  padding: var(--btn-pad-y) var(--btn-pad-x);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 200ms var(--ease),
+              border-color 200ms var(--ease),
+              color 200ms var(--ease),
+              transform 120ms var(--ease);
+  min-height: 48px; /* tap target */
+}
+.btn:active { transform: translateY(1px); }
+.btn[disabled], .btn[aria-disabled="true"] { opacity: 0.55; pointer-events: none; }
+
+.btn--primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.btn--primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+.btn--ghost { background: transparent; color: var(--cream); border-color: var(--cream-40); }
+.btn--ghost:hover { border-color: var(--cream); background: var(--cream-08); }
+.section--signup .btn--ghost { color: var(--on-light); border-color: color-mix(in srgb, var(--on-light) 30%, transparent); }
+
+.btn--block { display: flex; width: 100%; }
+.btn--sm { --btn-pad-y: 0.7rem; --btn-pad-x: 1.15rem; font-size: 0.8rem; min-height: 42px; }
+
+/* ---------- Buy button ---------- */
+
+.buybtn { display: flex; flex-direction: column; gap: 0.75rem; }
+.buybtn--full, .buybtn--full .buybtn__btn { width: 100%; }
+
+.buybtn__btn { position: relative; }
+.buybtn--lg .buybtn__btn { --btn-pad-y: 1.15rem; --btn-pad-x: 2.4rem; font-size: 1rem; min-height: 56px; }
+.buybtn--sm .buybtn__btn { --btn-pad-y: 0.7rem; --btn-pad-x: 1.15rem; font-size: 0.8rem; min-height: 42px; }
+
+.buybtn__sep { opacity: 0.5; }
+.buybtn__price { font-variant-numeric: tabular-nums; }
+
+.buybtn__spinner {
+  width: 15px; height: 15px;
+  border: 2px solid rgba(255,255,255,0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  display: none;
+  animation: spin 700ms linear infinite;
+}
+.buybtn__btn.is-loading .buybtn__spinner { display: block; }
+.buybtn__btn.is-loading { pointer-events: none; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.buybtn__legal {
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+/* ---------- Trust bar ---------- */
+
+.trustbar {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.5rem;
+  padding: 0;
+  margin: 1rem 0 0;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.trustbar li { display: flex; align-items: center; gap: 0.5rem; }
+.trustbar li::before {
+  content: "";
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex: none;
+}
+
+/* ---------- Announcement bar ---------- */
+
+.announce {
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  position: relative;
+  z-index: 60;
+}
+.announce__inner {
+  max-width: var(--maxw);
+  margin-inline: auto;
+  padding: 0.65rem var(--gutter);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  text-align: center;
+}
+.announce__item { margin: 0; }
+.announce__item a { color: inherit; }
+.announce__close {
+  position: absolute; right: 0.5rem; top: 50%;
+  transform: translateY(-50%);
+  background: none; border: 0; color: inherit;
+  font-size: 1.3rem; line-height: 1;
+  padding: 0.35rem 0.6rem; cursor: pointer; opacity: 0.75;
+}
+.announce__close:hover { opacity: 1; }
+
+/* On a phone a two-line announcement ate ~130px of the fold before the visitor
+   saw anything. Force one line and truncate rather than wrap. */
+@media (max-width: 899px) {
+  .announce__inner {
+    min-height: 32px;
+    padding-block: 0.45rem;
+    padding-inline: 2.25rem;
+  }
+  .announce { font-size: 0.68rem; letter-spacing: 0.06em; }
+  .announce__item {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+}
+
+/* ---------- Header ---------- */
+
+.header {
+  position: relative;
+  z-index: 50;
+  background: var(--ink-90);
+  border-bottom: var(--border);
+}
+.header--sticky { position: sticky; top: 0; }
+.header.is-scrolled {
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  background: color-mix(in srgb, var(--ink) 88%, transparent);
+}
+
+.header__inner {
+  max-width: var(--maxw);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+  min-height: var(--header-h);
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.header__logo { flex: none; text-decoration: none; display: flex; align-items: center; }
+.header__logo img { width: auto; max-height: 34px; object-fit: contain; }
+.header__wordmark, .footer__wordmark {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.header__nav { margin-inline: auto; }
+.header__list {
+  list-style: none; display: flex; gap: clamp(1rem, 2.2vw, 2.25rem);
+  margin: 0; padding: 0;
+}
+.header__link {
+  text-decoration: none;
+  font-size: 0.8rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cream-70);
+  transition: color 180ms var(--ease);
+}
+.header__link:hover { color: var(--cream); }
+
+.header__actions { margin-left: auto; display: flex; align-items: center; gap: 0.75rem; }
+.header__cta .buybtn__legal { display: none; }
+
+.header__toggle {
+  display: none;
+  width: 44px; height: 44px;
+  background: none; border: 0; cursor: pointer;
+  flex-direction: column; justify-content: center; gap: 5px;
+  padding: 0;
+}
+.header__toggle span {
+  display: block; height: 1.5px; width: 22px;
+  background: var(--cream); margin-inline: auto;
+  transition: transform 220ms var(--ease), opacity 160ms var(--ease);
+}
+.header__toggle[aria-expanded="true"] span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+.header__toggle[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+.header__toggle[aria-expanded="true"] span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+.header__mobile {
+  border-top: var(--border);
+  padding: 1.25rem var(--gutter) 2rem;
+  background: var(--ink);
+}
+.header__mobile-list { list-style: none; margin: 0 0 1.5rem; padding: 0; display: grid; gap: 0.35rem; }
+.header__mobile-list a {
+  display: block; padding: 0.75rem 0;
+  text-decoration: none;
+  font-family: var(--font-heading);
+  font-size: 1.35rem;
+  border-bottom: var(--border);
+}
+
+@media (max-width: 899px) {
+  .header__nav { display: none; }
+  .header__toggle { display: flex; }
+  .header__cta { display: none !important; }
+}
+@media (min-width: 900px) {
+  .header__mobile { display: none !important; }
+}
+
+/* ---------- Hero ---------- */
+
+.hero {
+  position: relative;
+  min-height: clamp(600px, 92svh, 1000px);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.hero__bg { position: absolute; inset: 0; z-index: -2; }
+.hero__bg img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
+
+.hero__scrim {
+  position: absolute; inset: 0; z-index: -1;
+  background:
+    linear-gradient(to right, var(--ink) 0%, color-mix(in srgb, var(--ink) 58%, transparent) 38%, transparent 68%),
+    linear-gradient(to top, var(--ink) 2%, transparent 40%);
+}
+@media (max-width: 899px) {
+  .hero__scrim {
+    background: linear-gradient(to top, var(--ink) 12%, color-mix(in srgb, var(--ink) 78%, transparent) 55%, color-mix(in srgb, var(--ink) 45%, transparent) 100%);
+  }
+}
+
+.hero__inner {
+  position: relative;
+  width: 100%;
+  max-width: var(--maxw);
+  margin-inline: auto;
+  padding: clamp(2rem, 4.5vh, 3.5rem) var(--gutter);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  align-items: center;
+}
+@media (min-width: 900px) {
+  .hero__inner { grid-template-columns: 1.1fr 0.9fr; }
+}
+
+.hero__content { max-width: 42rem; }
+.hero__title { font-size: var(--fs-display); margin-bottom: 0.22em; }
+.hero__sub {
+  font-size: var(--fs-lead);
+  color: var(--cream-70);
+  margin: 0 0 1.25rem;
+  max-width: 46ch;
+  text-wrap: pretty;
+}
+
+.hero__proof {
+  list-style: none; padding: 0;
+  margin: 0 0 1.25rem;
+  display: flex; flex-wrap: wrap;
+  gap: clamp(1.25rem, 4vw, 3rem);
+  border-block: var(--border);
+  padding-block: 0.9rem;
+}
+.hero__proof li { display: flex; flex-direction: column; gap: 0.2rem; }
+.hero__proof-value {
+  font-family: var(--font-heading);
+  font-size: clamp(1.35rem, 2.4vw, 1.9rem);
+  line-height: 1;
+}
+.hero__proof-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.hero__cta { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-start; }
+.hero__secondary { min-height: 56px; }
+
+.hero__bottle { justify-self: center; }
+.hero__bottle img {
+  max-height: min(62svh, 640px);
+  width: auto;
+  filter: drop-shadow(0 30px 60px rgba(0,0,0,0.55));
+}
+
+/* Hero image test, arm B: founder-led. The bottle cut-out is suppressed so a
+   photograph and a floating product shot don't fight for the same space. */
+:root[data-ab-hero_image="b"] .hero__bottle { display: none !important; }
+
+/* ---------- Mobile-first hero ----------
+   Paid social is the primary channel, so the phone layout is the real design,
+   not a fallback. Someone arriving from an Instagram or TikTok ad has just
+   watched the product move — landing them on a screen of type is a dead handoff.
+   The bottle therefore leads, and everything below it is trimmed to what fits
+   above the fold on a 390x844 device: headline, price, one action.          */
+
+@media (max-width: 899px) {
+  .hero { min-height: auto; }
+
+  .hero__inner {
+    grid-template-columns: 1fr;
+    padding-block: 0.75rem 1.5rem;
+    gap: 0.75rem;
+  }
+
+  /* Product first — DOM order stays desktop-correct for screen readers. */
+  .hero__bottle {
+    display: block;
+    order: -1;
+    justify-self: center;
+  }
+  .hero__bottle img {
+    max-height: 34svh;
+    margin-inline: auto;
+    filter: drop-shadow(0 18px 34px rgba(0, 0, 0, 0.6));
+  }
+
+  .hero__content { max-width: none; }
+  .hero__eyebrow { margin-bottom: 0.5rem; font-size: 0.68rem; }
+
+  .hero__title {
+    font-size: clamp(1.85rem, 7.6vw, 2.5rem);
+    margin-bottom: 0.5rem;
+  }
+
+  /* The subheading repeats the product section almost verbatim. On a phone it
+     cost five lines directly above the buy button, so it only runs on desktop. */
+  .hero__sub { display: none; }
+
+  /* Three columns instead of wrapping to two rows. */
+  .hero__proof {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding-block: 0.7rem;
+  }
+  .hero__proof-value { font-size: 1.05rem; }
+  .hero__proof-label { font-size: 0.6rem; letter-spacing: 0.1em; }
+
+  .hero__cta { flex-direction: column; gap: 0.5rem; width: 100%; }
+  .hero__cta .buybtn, .hero__cta .buybtn__btn { width: 100%; }
+
+  /* One action, not two. Paid-social traffic scrolls by instinct, so an
+     explicit "explore" affordance is desktop thinking — it only added a second
+     competing target and ~32px between the buy button and the trust row.
+     The section below is visible on scroll and does the same job. */
+  .hero__secondary { display: none; }
+
+  .trustbar { margin-top: 0.7rem; font-size: 0.75rem; gap: 0.3rem 0.9rem; }
+}
+
+.hero__scroll {
+  position: absolute;
+  bottom: 1.75rem; left: 50%;
+  transform: translateX(-50%);
+  width: 24px; height: 40px;
+  border: 1px solid var(--cream-40);
+  border-radius: 12px;
+  display: none;
+}
+@media (min-width: 900px) { .hero__scroll { display: block; } }
+.hero__scroll span {
+  position: absolute; left: 50%; top: 8px;
+  width: 3px; height: 6px; border-radius: 2px;
+  background: var(--cream-70);
+  transform: translateX(-50%);
+  animation: scrollcue 1.9s var(--ease) infinite;
+}
+@keyframes scrollcue {
+  0%   { opacity: 0; transform: translate(-50%, 0); }
+  40%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, 14px); }
+}
+
+/* ---------- Product story ---------- */
+
+.rum__media img { border-radius: var(--radius); }
+.rum__cta { margin-top: 2.25rem; }
+
+/* Detail photograph — a real photo, so it gets a frame and no drop shadow.
+   Capped at its native 370px so the placeholder is never upscaled; raise this
+   once a full-resolution original replaces it. */
+.rum__detail { display: grid; place-items: center; }
+.rum__detail img {
+  width: 100%;
+  border-radius: var(--radius);
+}
+
+/* Cut-out bottle sitting directly on the section background (no card, no frame) */
+.rum__bottle { display: grid; place-items: center; padding-block: 1rem; }
+.rum__bottle img {
+  width: auto;
+  max-height: min(70vh, 620px);
+  border-radius: 0;
+  filter: drop-shadow(0 26px 48px rgba(0, 0, 0, 0.55));
+}
+@media (max-width: 899px) {
+  .rum__bottle img { max-height: 420px; }
+}
+
+.placeholder {
+  display: grid; place-items: center;
+  border: 1px dashed var(--cream-16);
+  border-radius: var(--radius);
+  color: var(--muted);
+  font-size: 0.8rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  background: var(--cream-08);
+}
+.placeholder--portrait { aspect-ratio: 4 / 5; }
+
+.specs { margin: 2rem 0 0; display: grid; gap: 0; }
+.specs__row {
+  display: grid;
+  grid-template-columns: 11rem 1fr;
+  gap: 1rem;
+  padding-block: 0.85rem;
+  border-bottom: var(--border);
+}
+.specs__row:first-child { border-top: var(--border); }
+.specs dt {
+  font-size: 0.75rem; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--muted);
+}
+.specs dd { margin: 0; color: var(--cream); }
+@media (max-width: 599px) {
+  .specs__row { grid-template-columns: 1fr; gap: 0.25rem; }
+}
+
+/* ---------- Tasting notes ---------- */
+
+.notes {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+}
+.notes__card {
+  border: var(--border);
+  border-radius: var(--radius);
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+  background: var(--cream-08);
+}
+.notes__step {
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  color: var(--accent);
+  letter-spacing: 0.12em;
+  margin: 0 0 1rem;
+}
+.notes__title { font-size: var(--fs-h3); margin-bottom: 0.5rem; }
+.notes__body { margin: 0 0 1.25rem; color: var(--cream-70); }
+.notes__tags { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.45rem; }
+.notes__tags li {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid var(--cream-16);
+  border-radius: 999px;
+  padding: 0.32rem 0.7rem;
+  color: var(--muted);
+}
+.notes__disclaimer {
+  margin: 2rem 0 0;
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* ---------- Craft imagery ---------- */
+
+.craft__media {
+  margin: 0 0 clamp(2.5rem, 5vw, 4rem);
+}
+.craft__media img {
+  width: 100%;
+  aspect-ratio: 2 / 1;
+  object-fit: cover;
+  object-position: center 26%;   /* higher than centre: the bottle sits in the
+                                    upper half and gets cropped away otherwise */
+  border-radius: var(--radius);
+}
+.craft__media figcaption {
+  margin-top: 0.7rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* A 2:1 band is a letterbox on a phone. Give it more height so the subject
+   survives the crop. */
+@media (max-width: 899px) {
+  .craft__media img { aspect-ratio: 4 / 3; }
+}
+
+/* ---------- Timeline ---------- */
+
+.timeline {
+  list-style: none;
+  margin: 0 auto;
+  padding: 0;
+  max-width: 900px;
+  position: relative;
+}
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: 7px; top: 8px; bottom: 8px;
+  width: 1px;
+  background: linear-gradient(to bottom, var(--accent), var(--cream-16));
+}
+.timeline__item {
+  position: relative;
+  padding-left: 3rem;
+  padding-bottom: clamp(2rem, 4vw, 3rem);
+}
+.timeline__item:last-child { padding-bottom: 0; }
+.timeline__marker {
+  position: absolute; left: 0; top: 6px;
+  width: 15px; height: 15px;
+  border-radius: 50%;
+  background: var(--ink-deep);
+  border: 2px solid var(--accent);
+}
+.timeline__span {
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 0.4rem;
+}
+.timeline__title { font-size: var(--fs-h3); margin-bottom: 0.4rem; }
+.timeline__body { margin: 0; color: var(--cream-70); max-width: 58ch; }
+
+/* ---------- Serves ---------- */
+
+.serves {
+  display: grid;
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+}
+.serve__media img { border-radius: var(--radius); aspect-ratio: 4/5; object-fit: cover; }
+.serve__body { padding-top: 1.25rem; }
+.serve__title { font-size: var(--fs-h3); margin-bottom: 0.5rem; }
+.serve__method { color: var(--cream-70); margin: 0 0 1rem; }
+.serve__ingredients {
+  list-style: none; margin: 0; padding: 0;
+  border-top: var(--border);
+}
+.serve__ingredients li {
+  padding-block: 0.5rem;
+  border-bottom: var(--border);
+  font-size: 0.9rem;
+  color: var(--cream-70);
+}
+
+/* ---------- Social proof ---------- */
+
+.quotes {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+}
+.quote { margin: 0; border-left: 2px solid var(--accent); padding-left: 1.5rem; }
+.quote blockquote {
+  margin: 0 0 1rem;
+  font-family: var(--font-heading);
+  font-size: var(--fs-h3);
+  line-height: 1.35;
+}
+.quote figcaption { display: flex; flex-direction: column; gap: 0.15rem; }
+.quote__source { font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; }
+.quote__detail { font-size: 0.8rem; color: var(--muted); }
+
+.logos {
+  list-style: none; margin: 3rem 0 0; padding: 0;
+  display: flex; flex-wrap: wrap; justify-content: center;
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  align-items: center;
+}
+.logos img { opacity: 0.6; filter: grayscale(1); max-height: 52px; width: auto; }
+
+.proof__empty {
+  text-align: center; color: var(--muted);
+  font-size: 0.85rem; max-width: 46ch; margin-inline: auto;
+  border: 1px dashed var(--cream-16); padding: 1.5rem; border-radius: var(--radius);
+}
+
+/* ---------- FAQ ---------- */
+
+.faq { border-top: var(--border); }
+.faq__item { border-bottom: var(--border); }
+.faq__q {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1.5rem;
+  padding-block: 1.25rem;
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--font-heading);
+  font-size: clamp(1.05rem, 1.6vw, 1.3rem);
+  min-height: 48px;
+}
+.faq__q::-webkit-details-marker { display: none; }
+.faq__icon { position: relative; width: 14px; height: 14px; flex: none; }
+.faq__icon::before, .faq__icon::after {
+  content: ""; position: absolute; background: var(--accent);
+  transition: transform 220ms var(--ease);
+}
+.faq__icon::before { left: 0; top: 6px; width: 14px; height: 1.5px; }
+.faq__icon::after  { left: 6px; top: 0; width: 1.5px; height: 14px; }
+.faq__item[open] .faq__icon::after { transform: scaleY(0); }
+.faq__a { padding-bottom: 1.5rem; max-width: 62ch; }
+
+.faq__cta {
+  margin-top: 3rem; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 1rem;
+}
+.faq__cta p { margin: 0; color: var(--muted); }
+
+/* ---------- Signup ---------- */
+
+.signup { text-align: center; }
+.signup__form { margin-top: 1.75rem; }
+.signup__row {
+  display: flex; gap: 0.6rem; flex-wrap: wrap;
+  max-width: 520px; margin-inline: auto;
+}
+.signup__row input {
+  flex: 1 1 240px;
+  min-height: 52px;
+  padding: 0 1.1rem;
+  font: inherit;
+  color: var(--on-light);
+  background: #fff;
+  border: 1px solid color-mix(in srgb, var(--on-light) 22%, transparent);
+  border-radius: var(--radius);
+}
+.signup__row input::placeholder { color: color-mix(in srgb, var(--on-light) 45%, transparent); }
+.signup__row input:invalid:not(:placeholder-shown) { border-color: var(--accent); }
+.signup__row .btn { flex: 0 0 auto; min-height: 52px; }
+
+.signup__consent {
+  margin: 1rem auto 0; max-width: 46ch;
+  font-size: 0.75rem; line-height: 1.5;
+  color: color-mix(in srgb, var(--on-light) 60%, transparent);
+}
+.signup__msg { margin: 1rem 0 0; font-size: 0.9rem; font-weight: 600; }
+.signup__msg--ok { color: #1c7a4a; }
+.signup__msg--err { color: var(--accent); }
+
+/* ---------- Sticky buy bar ---------- */
+
+.stickybar {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 70;
+  display: flex; align-items: center; gap: 1rem;
+  padding: 0.7rem var(--gutter);
+  padding-bottom: calc(0.7rem + env(safe-area-inset-bottom, 0px));
+  background: color-mix(in srgb, var(--ink) 95%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-top: var(--border);
+  transform: translateY(110%);
+  transition: transform 320ms var(--ease);
+}
+.stickybar.is-visible { transform: translateY(0); }
+.stickybar .buybtn__legal { display: none; }
+.stickybar .buybtn { flex: 0 0 auto; }
+
+.stickybar__info { display: flex; flex-direction: column; min-width: 0; }
+.stickybar__name {
+  font-size: 0.85rem; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.stickybar__meta { font-size: 0.72rem; color: var(--muted); }
+
+@media (min-width: 900px) { .stickybar { display: none; } }
+
+/* ---------- Age gate ---------- */
+
+.age-gate {
+  position: fixed; inset: 0; z-index: 200;
+  display: grid;
+  padding: var(--gutter);
+
+  /* The panel must stay reachable no matter how little vertical room there is.
+     Arm B is three inputs, a heading and a button, and on a small phone with
+     the keyboard up that is within ~20px of the viewport height — before any
+     accessibility text scaling. Without these, the overflow is simply
+     unreachable and the visitor cannot get past a gate that has no exit. */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+
+  /* `safe` centres while it fits and pins to the start when it does not.
+     Plain `center` overflows equally in BOTH directions, putting the top of
+     the panel above the scroll origin where it can never be scrolled to.
+     The unprefixed line first, so browsers without `safe` still centre. */
+  place-items: center;
+  place-items: safe center;
+}
+
+/* Short viewports — landscape phones, or a soft keyboard eating two thirds of
+   the screen. Tighten the rhythm rather than let the button fall off. */
+@media (max-height: 620px) {
+  .age-gate__wordmark { margin-bottom: 1rem; font-size: 1.15rem; }
+  .age-gate__logo { margin-bottom: 1rem; max-height: 44px; }
+  .age-gate__heading { margin-bottom: 1.15rem; font-size: clamp(1.15rem, 3.2vw, 1.5rem); }
+  .age-gate__legal { margin-top: 1.15rem; }
+  .dob .btn { margin-top: 0.8rem; }
+}
+/* The `no-js` class is stripped by an inline script in <head>, so with JS off
+   it survives. The interactive panel — which needs JS to do anything — gives
+   way entirely to the <noscript> message that explains why. The child
+   combinator matters: the <noscript> block contains a panel of its own, and
+   only the direct child is the one to hide. */
+html.no-js .age-gate > .age-gate__panel { display: none; }
+
+/* Fixed, not absolute: an absolutely-positioned backdrop sizes to the padding
+   box, so once the gate scrolls it would stop covering the page beneath. */
+.age-gate__bg {
+  position: fixed; inset: 0;
+  background: var(--ink);
+  opacity: 0.97;
+}
+.age-gate__panel {
+  position: relative;
+  width: 100%; max-width: 460px;
+  text-align: center;
+  animation: gatein 420ms var(--ease) both;
+}
+@keyframes gatein {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.age-gate__logo { margin: 0 auto 2rem; max-height: 64px; width: auto; }
+.age-gate__wordmark {
+  font-family: var(--font-heading);
+  font-size: 1.5rem; letter-spacing: 0.22em;
+  text-transform: uppercase; margin-bottom: 2rem;
+}
+.age-gate__eyebrow {
+  font-size: var(--fs-eyebrow); letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--muted); margin: 0 0 0.75rem;
+}
+.age-gate__heading {
+  font-size: clamp(1.4rem, 3.6vw, 1.95rem);
+  margin-bottom: 2rem;
+  text-wrap: balance;
+}
+
+.age-gate__actions { display: flex; gap: 0.7rem; justify-content: center; }
+.age-gate__actions .btn { flex: 1 1 0; max-width: 170px; }
+
+.age-gate__legal {
+  margin: 2rem 0 0; font-size: 0.72rem; line-height: 1.6; color: var(--muted);
+}
+.age-gate__legal a { color: var(--cream-70); }
+
+/* ---------- Age gate — experiment arms ----------
+   Arm A is the default: with no experiment registered, or the experiment
+   parked, or JS disabled entirely, the low-friction gate is what renders.
+   `data-ab-age_gate` is stamped on <html> by the A/B framework before first
+   paint, and theme.js reads the same attribute to decide which arm to wire up.
+   One source of truth, so the visible arm and the live arm cannot diverge. */
+
+.age-gate__arm[data-gate-arm="b"] { display: none; }
+
+:root[data-ab-age_gate="b"] .age-gate__arm[data-gate-arm="a"] { display: none; }
+:root[data-ab-age_gate="b"] .age-gate__arm[data-gate-arm="b"] { display: block; }
+
+/* ---------- Age gate — birthdate form (arm B) ---------- */
+
+.dob { margin-top: 0.5rem; }
+
+.dob__fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.4fr;
+  gap: 0.6rem;
+  text-align: left;
+}
+
+.dob__field { display: flex; flex-direction: column; gap: 0.35rem; }
+
+.dob__label {
+  font-size: var(--fs-eyebrow);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.dob__input {
+  width: 100%;
+  /* 16px minimum: anything smaller and iOS Safari zooms the viewport on focus,
+     which on a gate is read as the page breaking. */
+  font-size: 1rem;
+  font-family: inherit;
+  text-align: center;
+  letter-spacing: 0.08em;
+  padding: 0.75rem 0.5rem;
+  color: var(--cream);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--cream-40);
+  border-radius: var(--radius);
+  -webkit-appearance: none;
+  appearance: none;
+  transition: border-color 160ms var(--ease), background-color 160ms var(--ease);
+}
+.dob__input::placeholder { color: var(--cream-40); }
+.dob__input:focus {
+  outline: none;
+  border-color: var(--cream);
+  background: rgba(255, 255, 255, 0.07);
+}
+.dob__input:focus-visible { outline: 2px solid var(--cream); outline-offset: 2px; }
+
+.dob__error {
+  margin: 0.85rem 0 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: #e8837c;
+  text-align: center;
+}
+.dob__error[hidden] { display: none; }
+
+.dob .btn { margin-top: 1.1rem; }
+
+/* ---------- Footer ---------- */
+
+.footer {
+  background: var(--ink-deep);
+  border-top: var(--border);
+  padding-block: clamp(3rem, 6vw, 5rem) 2rem;
+  margin-bottom: var(--stickybar-h);
+}
+.footer__top {
+  display: grid; gap: 2.5rem;
+  grid-template-columns: 1fr;
+  padding-bottom: 2.5rem;
+  border-bottom: var(--border);
+}
+@media (min-width: 800px) {
+  .footer__top { grid-template-columns: 1fr 1.4fr; }
+}
+.footer__brand img { max-height: 46px; width: auto; }
+.footer__tagline { margin: 1rem 0 0; color: var(--muted); font-size: 0.88rem; max-width: 34ch; }
+
+.footer__cols {
+  display: grid; gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+.footer__col-title {
+  font-family: var(--font-body);
+  font-size: 0.72rem; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--muted);
+  margin: 0 0 1rem;
+}
+.footer__col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.6rem; }
+.footer__col a { text-decoration: none; font-size: 0.9rem; color: var(--cream-70); }
+.footer__col a:hover { color: var(--cream); }
+
+.footer__legal { padding-top: 2rem; display: grid; gap: 0.75rem; }
+.footer__responsibility {
+  margin: 0; font-size: 0.7rem; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--muted); line-height: 1.7; max-width: 70ch;
+}
+.footer__copy, .footer__attribution { margin: 0; font-size: 0.78rem; color: var(--muted); }
+.footer__privacy { margin: 0; font-size: 0.78rem; }
+.footer__privacy a { color: var(--cream-70); text-decoration-color: var(--cream-40); }
+.footer__privacy a:hover { color: var(--cream); }
+
+/* ---------- Demo cart (demo mode only) ---------- */
+
+body.cart-open { overflow: hidden; }
+
+.democart { position: fixed; inset: 0; z-index: 180; }
+.democart[hidden] { display: none; }
+
+.democart__backdrop {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.6);
+  opacity: 0;
+  transition: opacity 280ms var(--ease);
+}
+.democart.is-open .democart__backdrop { opacity: 1; }
+
+.democart__panel {
+  position: absolute; top: 0; right: 0; bottom: 0;
+  width: min(420px, 100%);
+  background: var(--ink-deep);
+  border-left: var(--border);
+  display: flex; flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 300ms var(--ease);
+}
+.democart.is-open .democart__panel { transform: none; }
+
+.democart__head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.25rem var(--gutter);
+  border-bottom: var(--border);
+}
+.democart__head h2 {
+  margin: 0;
+  font-size: 0.8rem; letter-spacing: 0.18em;
+  text-transform: uppercase; font-family: var(--font-body); font-weight: 600;
+}
+.democart__x {
+  background: none; border: 0; color: var(--cream);
+  font-size: 1.6rem; line-height: 1; cursor: pointer;
+  padding: 0.25rem 0.5rem;
+}
+
+.democart__body { flex: 1; overflow-y: auto; padding: var(--gutter); }
+
+.democart__line {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem 0.75rem;
+  align-items: center;
+  padding-bottom: 1.25rem;
+  border-bottom: var(--border);
+}
+.democart__name { margin: 0 0 0.25rem; font-weight: 600; font-size: 0.95rem; }
+.democart__meta { margin: 0; font-size: 0.78rem; color: var(--muted); }
+
+.democart__qty {
+  display: inline-flex; align-items: center;
+  border: 1px solid var(--cream-40);
+  border-radius: var(--radius);
+}
+.democart__qty button {
+  width: 38px; height: 38px;
+  background: none; border: 0; color: var(--cream);
+  font-size: 1.05rem; cursor: pointer;
+}
+.democart__qty span {
+  min-width: 30px; text-align: center;
+  font-variant-numeric: tabular-nums; font-size: 0.9rem;
+}
+
+.democart__price {
+  grid-column: 2; margin: 0;
+  font-variant-numeric: tabular-nums; font-size: 0.95rem;
+}
+.democart__note {
+  margin: 1.25rem 0 0; font-size: 0.78rem;
+  color: var(--muted); line-height: 1.6;
+}
+
+.democart__foot { padding: var(--gutter); border-top: var(--border); }
+.democart__subtotal {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 1rem; font-size: 1rem;
+}
+.democart__subtotal span:last-child {
+  font-family: var(--font-heading);
+  font-size: 1.4rem; font-variant-numeric: tabular-nums;
+}
+.democart__checkout { width: 100%; }
+.democart__legal {
+  margin: 0.9rem 0 0; font-size: 0.72rem;
+  color: var(--muted); line-height: 1.55; text-align: center;
+}
+
+/* ---------- Reveal on scroll ---------- */
+
+.js [data-reveal] {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 620ms var(--ease), transform 620ms var(--ease);
+}
+.js [data-reveal].is-revealed { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .js [data-reveal] { opacity: 1; transform: none; }
+}

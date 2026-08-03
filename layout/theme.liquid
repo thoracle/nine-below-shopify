@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="{{ request.locale.iso_code }}" class="no-js{% if settings.age_gate_enabled %} gate-armed{% endif %}">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="{{ settings.color_ink }}">
+
+  {%- liquid
+    assign page_title = page_title | default: settings.meta_title
+    assign page_desc  = page_description | default: settings.meta_description
+  -%}
+
+  <title>{{ page_title }}</title>
+  <meta name="description" content="{{ page_desc | escape }}">
+  {%- if canonical_url != blank %}<link rel="canonical" href="{{ canonical_url }}">{% endif -%}
+
+  {%- if settings.favicon != blank -%}
+    <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 48 }}">
+    <link rel="apple-touch-icon" href="{{ settings.favicon | image_url: width: 180 }}">
+  {%- endif -%}
+
+  {%- comment -%} Open Graph / Twitter {%- endcomment -%}
+  <meta property="og:site_name" content="{{ shop.name }}">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{{ page_title }}">
+  <meta property="og:description" content="{{ page_desc | escape }}">
+  {%- if canonical_url != blank %}<meta property="og:url" content="{{ canonical_url }}">{% endif -%}
+  {%- if settings.share_image != blank -%}
+    <meta property="og:image" content="{{ settings.share_image | image_url: width: 1200 }}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+  {%- endif -%}
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ page_title }}">
+  <meta name="twitter:description" content="{{ page_desc | escape }}">
+
+  {%- comment -%}
+    Performance: establish connections to third-party origins before they are
+    needed. The current Webflow build pays a full DNS+TLS round trip mid-render
+    for every one of these, which delays the buy button becoming interactive.
+  {%- endcomment -%}
+  <link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.shopifycdn.com" crossorigin>
+  {%- if settings.ga4_enabled and settings.ga4_measurement_id != 'G-XXXXXXXXXX' -%}
+    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
+  {%- endif -%}
+  {%- if settings.bn_enabled and settings.bn_demo_mode == false -%}
+    <link rel="preconnect" href="https://buybutton.bottlenexus.com" crossorigin>
+    <link rel="dns-prefetch" href="https://buybutton.bottlenexus.com">
+  {%- endif -%}
+
+  {% render 'css-variables' %}
+
+  <link rel="stylesheet" href="{{ 'theme.css' | asset_url }}">
+
+  {% render 'flow-styles' %}
+
+  {%- comment -%} Structured data: makes the product eligible for rich results. {%- endcomment -%}
+  {% render 'schema-org' %}
+
+  {%- comment -%} Analytics must load before body so consent defaults are set first. {%- endcomment -%}
+  {% render 'analytics-head' %}
+
+  {%- comment -%}
+    Both of these MUST stay inline and blocking, and MUST stay above the body.
+    They decide what the visitor sees; deferring either produces a visible flash
+    of the wrong variant or of nav that then disappears.
+  {%- endcomment -%}
+  {% render 'ab-framework' %}
+
+  {%- comment -%}
+    Also inline and blocking, and also above <body>. It reads no A/B state, so
+    its position relative to ab-framework does not matter — what matters is that
+    it resolves before anything paints, or the site flashes before the gate.
+  {%- endcomment -%}
+  {% render 'age-gate-head' %}
+  {% render 'landing-flow' %}
+
+  <script>document.documentElement.className = document.documentElement.className.replace('no-js','js');</script>
+
+  {{ content_for_header }}
+</head>
+
+<body class="template-{{ template.name | default: 'index' }}">
+
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  {%- if settings.age_gate_enabled -%}
+    {% render 'age-gate' %}
+  {%- endif -%}
+
+  {% section 'announcement-bar' %}
+  {% section 'header' %}
+
+  <main id="main" role="main">
+    {{ content_for_layout }}
+  </main>
+
+  {% section 'footer' %}
+
+  {%- if settings.sticky_mobile_cta -%}
+    {% render 'sticky-buy-bar' %}
+  {%- endif -%}
+
+  {% render 'consent-bridge' %}
+
+  {%- comment -%}
+    Theme config handed to JS as one JSON blob rather than sprinkled inline
+    attributes, so the tracking layer has a single source of truth.
+  {%- endcomment -%}
+  <script id="theme-config" type="application/json">
+    {
+      "ga4": {
+        "enabled": {{ settings.ga4_enabled | json }},
+        "measurementId": {{ settings.ga4_measurement_id | json }},
+        "debug": {{ settings.ga4_debug | json }},
+        "consentMode": {{ settings.consent_mode | json }},
+        "trackScroll": {{ settings.track_scroll_depth | json }},
+        "trackOutbound": {{ settings.track_outbound | json }}
+      },
+      "bottleNexus": {
+        "enabled": {{ settings.bn_enabled | json }},
+        "demoMode": {{ settings.bn_demo_mode | json }},
+        "token": {{ settings.bn_token | json }},
+        "productId": {{ settings.bn_product_id | json }},
+        "behavior": {{ settings.bn_behavior | json }},
+        "buttonText": {{ settings.bn_button_text | json }}
+      },
+      "product": {
+        "name": {{ settings.product_name | json }},
+        "price": {{ settings.product_price | json }},
+        "currency": {{ settings.product_currency | json }},
+        "sku": {{ settings.product_sku | json }},
+        "size": {{ settings.product_size | json }},
+        "abv": {{ settings.product_abv | json }},
+        "availability": {{ settings.product_availability | json }}
+      },
+      "ageGate": {
+        "enabled": {{ settings.age_gate_enabled | json }},
+        "rememberDays": {{ settings.age_gate_remember_days | json }},
+        "minAge": {{ settings.age_gate_min_age | default: 21 | json }},
+        "invalidText": {{ settings.age_gate_dob_invalid | default: 'Please enter a valid birthdate.' | json }}
+      },
+      "klaviyo": {
+        "companyId": {{ settings.klaviyo_company_id | json }}
+      }
+    }
+  </script>
+
+  <script src="{{ 'analytics.js' | asset_url }}" defer></script>
+  <script src="{{ 'ab.js' | asset_url }}" defer></script>
+
+  {%- comment -%}
+    After analytics.js and ab.js so `age_gate_view` has a tracker to fire into
+    and the arm's user properties are already set — but in its own file, and
+    before theme.js. Deferred scripts execute in order and an uncaught error in
+    one does not stop the next, so nothing in theme.js can break the gate.
+  {%- endcomment -%}
+  <script src="{{ 'age-gate.js' | asset_url }}" defer></script>
+  <script src="{{ 'bottlenexus.js' | asset_url }}" defer></script>
+  <script src="{{ 'theme.js' | asset_url }}" defer></script>
+</body>
+</html>

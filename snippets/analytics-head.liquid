@@ -1,0 +1,137 @@
+{%- comment -%}
+  Analytics bootstrap. Runs in <head> and BEFORE any tag loads, because
+  Consent Mode defaults are only honoured if they are set first.
+
+  If the measurement ID is still the G-XXXXXXXXXX placeholder, no network
+  request is made at all: a local gtag shim collects the dataLayer so the whole
+  funnel can be exercised and inspected in the console during the demo.
+{%- endcomment -%}
+
+{%- liquid
+  assign ga_id = settings.ga4_measurement_id
+  assign is_placeholder = false
+  if ga_id == blank or ga_id == 'G-XXXXXXXXXX'
+    assign is_placeholder = true
+  endif
+-%}
+
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+
+  window.NINEBELOW_ANALYTICS_DEMO = {{ is_placeholder | json }};
+
+  {%- if settings.consent_mode -%}
+  {%- comment -%}
+    Consent Mode v2 defaults. `ad_user_data` and `ad_personalization` are the v2
+    additions — omitting them degrades Google Ads modelling.
+
+    The default is set by the "Consent Mode default" theme setting, because the
+    correct answer is jurisdictional: US state laws are opt-out (measurement may
+    run until the visitor opts out), EEA/UK are opt-in (nothing runs first).
+    Shopify's banner overrides this the moment a visitor actually chooses.
+  {%- endcomment -%}
+  {%- assign consent_state = settings.consent_default | default: 'granted' -%}
+  gtag('consent', 'default', {
+    'ad_storage': {{ consent_state | json }},
+    'ad_user_data': {{ consent_state | json }},
+    'ad_personalization': {{ consent_state | json }},
+    'analytics_storage': {{ consent_state | json }},
+    'functionality_storage': 'granted',
+    'personalization_storage': {{ consent_state | json }},
+    'security_storage': 'granted'
+    {%- if consent_state == 'denied' %},
+    'wait_for_update': 500
+    {%- endif %}
+  });
+  gtag('set', 'ads_data_redaction', {{ consent_state | json }} === 'denied');
+  gtag('set', 'url_passthrough', true);
+  {%- endif -%}
+
+  gtag('js', new Date());
+</script>
+
+{%- if is_placeholder -%}
+  {%- comment -%} Demo shim: no external request, everything logged locally. {%- endcomment -%}
+  <script>
+    (function () {
+      var log = [];
+      window.NINEBELOW_EVENT_LOG = log;
+      var origPush = window.dataLayer.push.bind(window.dataLayer);
+      window.dataLayer.push = function () {
+        var args = Array.prototype.slice.call(arguments);
+        args.forEach(function (a) {
+          if (a && a[0] === 'event') {
+            var rec = { event: a[1], params: a[2] || {}, t: new Date().toISOString() };
+            log.push(rec);
+            if (window.console && console.groupCollapsed) {
+              console.groupCollapsed('%c GA4 %c ' + rec.event,
+                'background:#1f8ab0;color:#e8eef2;border-radius:2px', 'color:#1f8ab0;font-weight:600');
+              console.log(rec.params);
+              console.groupEnd();
+            }
+            window.dispatchEvent(new CustomEvent('ninebelow:ga4', { detail: rec }));
+          }
+        });
+        return origPush.apply(null, args);
+      };
+      console.info(
+        '%c Nine Below %c analytics demo mode — no data is sent. ' +
+        'Inspect NINEBELOW_EVENT_LOG for captured events.',
+        'background:#0d1418;color:#e8eef2;padding:2px 6px;border-radius:2px',
+        'color:#8098a6'
+      );
+    })();
+  </script>
+{%- else -%}
+  {%- if settings.gtm_id != blank -%}
+    <script>
+      (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});
+      var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';
+      j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+      })(window,document,'script','dataLayer','{{ settings.gtm_id }}');
+    </script>
+  {%- else -%}
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ ga_id }}"></script>
+  {%- endif -%}
+
+  <script>
+    gtag('config', {{ ga_id | json }}, {
+      'send_page_view': true,
+      'currency': {{ settings.product_currency | json }}
+      {%- if settings.ga4_debug %}, 'debug_mode': true{% endif -%}
+    });
+  </script>
+
+  {%- if settings.meta_pixel_id != blank -%}
+    <script>
+      !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+      n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+      document,'script','https://connect.facebook.net/en_US/fbevents.js');
+      fbq('init', {{ settings.meta_pixel_id | json }});
+      fbq('track', 'PageView');
+    </script>
+  {%- endif -%}
+
+  {%- if settings.tiktok_pixel_id != blank -%}
+    <script>
+      !function(w,d,t){w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];
+      ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie"];
+      ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};
+      for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);
+      ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e};
+      ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js";
+      ttq._i=ttq._i||{};ttq._i[e]=[];ttq._i[e]._u=r;ttq._t=ttq._t||{};ttq._t[e]=+new Date;
+      ttq._o=ttq._o||{};ttq._o[e]=n||{};var o=d.createElement("script");o.type="text/javascript";
+      o.async=!0;o.src=r+"?sdkid="+e+"&lib="+t;var a=d.getElementsByTagName("script")[0];
+      a.parentNode.insertBefore(o,a)};
+      ttq.load({{ settings.tiktok_pixel_id | json }});ttq.page();}(window,document,'ttq');
+    </script>
+  {%- endif -%}
+{%- endif -%}
+
+{%- if settings.klaviyo_company_id != blank -%}
+  <script async src="https://static.klaviyo.com/onsite/js/klaviyo.js?company_id={{ settings.klaviyo_company_id }}"></script>
+{%- endif -%}

@@ -1,0 +1,102 @@
+{%- comment -%}
+  Sticky header with a persistent buy action.
+
+  The live site's only navigation is in the footer, and its only CTA is in the
+  hero. That means a visitor who scrolls has no way to buy and no way to move
+  around without returning to the top. This header stays available, carries the
+  buy button once the hero CTA is out of view, and gives the page real
+  in-page navigation for the new content sections.
+{%- endcomment -%}
+
+<header class="header{% if section.settings.sticky %} header--sticky{% endif %}"
+        data-header role="banner">
+  <div class="header__inner">
+
+    <a href="/" class="header__logo" data-track-cta="logo" aria-label="{{ shop.name | escape }} — home">
+      {%- if settings.logo != blank -%}
+        <img src="{{ settings.logo | image_url: width: 320 }}"
+             srcset="{{ settings.logo | image_url: width: 160 }} 160w,
+                     {{ settings.logo | image_url: width: 320 }} 320w"
+             sizes="160px"
+             alt="{{ shop.name | escape }}" width="160" height="40" fetchpriority="high">
+      {%- else -%}
+        <span class="header__wordmark">Nine Below</span>
+      {%- endif -%}
+    </a>
+
+    <nav class="header__nav" aria-label="Primary">
+      <ul class="header__list">
+        {%- for block in section.blocks -%}
+          {%- if block.type == 'link' -%}
+            <li {{ block.shopify_attributes }}>
+              <a href="{{ block.settings.url }}"
+                 class="header__link"
+                 data-track-cta="nav:{{ block.settings.label | handleize }}">
+                {{ block.settings.label }}
+              </a>
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+    </nav>
+
+    <div class="header__actions">
+      {%- if settings.sticky_header_cta -%}
+        <div class="header__cta" data-header-cta hidden>
+          {% render 'buy-button', location: 'header', size: 'sm' %}
+        </div>
+      {%- endif -%}
+
+      <button type="button" class="header__toggle" data-nav-toggle
+              aria-expanded="false" aria-controls="mobile-nav" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="header__mobile" id="mobile-nav" data-mobile-nav hidden>
+    <ul class="header__mobile-list">
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'link' -%}
+          <li>
+            <a href="{{ block.settings.url }}"
+               data-track-cta="nav-mobile:{{ block.settings.label | handleize }}">
+              {{ block.settings.label }}
+            </a>
+          </li>
+        {%- endif -%}
+      {%- endfor -%}
+    </ul>
+    <div class="header__mobile-cta">
+      {% render 'buy-button', location: 'mobile-nav', size: 'md', full: true %}
+    </div>
+  </div>
+</header>
+
+{% schema %}
+{
+  "name": "Header",
+  "settings": [
+    { "type": "checkbox", "id": "sticky", "label": "Sticky on scroll", "default": true }
+  ],
+  "blocks": [
+    {
+      "type": "link",
+      "name": "Nav link",
+      "settings": [
+        { "type": "text", "id": "label", "label": "Label", "default": "The Vodka" },
+        { "type": "url", "id": "url", "label": "URL" }
+      ]
+    }
+  ],
+  "default": {
+    "blocks": [
+      { "type": "link", "settings": { "label": "The Vodka",   "url": "#the-vodka" } },
+      { "type": "link", "settings": { "label": "Tasting",   "url": "#tasting" } },
+      { "type": "link", "settings": { "label": "The Craft", "url": "#craft" } },
+      { "type": "link", "settings": { "label": "Serve",     "url": "#serve" } },
+      { "type": "link", "settings": { "label": "FAQ",       "url": "#faq" } }
+    ]
+  }
+}
+{% endschema %}

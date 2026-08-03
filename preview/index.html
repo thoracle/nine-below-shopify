@@ -1,0 +1,808 @@
+<!doctype html>
+<html lang="en" class="no-js gate-armed">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nine Below — Conversion Theme Preview</title>
+<meta name="description" content="Nine Below — Nordic winter wheat vodka, distilled nine times and filtered at nine degrees below zero through glacial basalt.">
+<meta name="theme-color" content="#0d1418">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Mirrors snippets/css-variables.liquid, which Liquid generates at render time -->
+<style>
+  :root{
+    --ink:#0d1418; --ink-deep:#080e11; --cream:#e8eef2;
+    --accent:#1f8ab0; --accent-hover:#2aa3cc; --muted:#8098a6;
+    --light:#eef3f6; --on-light:#0d1418;
+    --cream-08:rgba(232,238,242,.08); --cream-16:rgba(232,238,242,.16);
+    --cream-40:rgba(232,238,242,.40); --cream-70:rgba(232,238,242,.70);
+    --ink-90:rgba(13,20,24,.90); --ink-60:rgba(13,20,24,.60);
+    --font-heading:'Work Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+    --font-body:'Work Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+    --fw-heading:700; --fw-body:400;
+    --scale-h:1; --scale-b:1;
+    --fs-display:calc(clamp(2.1rem,1.1rem + 3.2vw,3.9rem)*var(--scale-h));
+    --fs-h1:calc(clamp(2.25rem,1.4rem + 3.6vw,4.25rem)*var(--scale-h));
+    --fs-h2:calc(clamp(1.75rem,1.2rem + 2.2vw,3rem)*var(--scale-h));
+    --fs-h3:calc(clamp(1.3rem,1.1rem + .9vw,1.85rem)*var(--scale-h));
+    --fs-body:calc(clamp(1rem,.96rem + .2vw,1.125rem)*var(--scale-b));
+    --fs-lead:calc(clamp(1.1rem,1rem + .6vw,1.4rem)*var(--scale-b));
+    --fs-small:calc(.875rem*var(--scale-b));
+    --fs-eyebrow:calc(.78rem*var(--scale-b));
+    --gutter:clamp(1.25rem,4vw,3rem);
+    --section:clamp(4rem,9vw,8.5rem);
+    --maxw:1280px; --maxw-narrow:780px;
+    --radius:2px; --border:1px solid var(--cream-16);
+    --ease:cubic-bezier(.22,1,.36,1); --dur:520ms;
+    --header-h:72px; --stickybar-h:0px;
+  }
+  @media (max-width:749px){
+    :root{--header-h:60px}
+    body.has-sticky-bar{--stickybar-h:76px}
+  }
+</style>
+
+<link rel="stylesheet" href="../assets/theme.css">
+
+<!-- Mirrors snippets/analytics-head.liquid in placeholder (demo) mode -->
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+  window.NINEBELOW_ANALYTICS_DEMO = true;
+  /* US-only store: opt-out regime, so measurement may run until a visitor
+     opts out. Switch to 'denied' before selling into the EEA/UK. */
+  gtag('consent','default',{
+    ad_storage:'granted', ad_user_data:'granted', ad_personalization:'granted',
+    analytics_storage:'granted', functionality_storage:'granted',
+    personalization_storage:'granted', security_storage:'granted'
+  });
+  gtag('set','ads_data_redaction',false);
+  gtag('set','url_passthrough',true);
+  gtag('js', new Date());
+
+  (function(){
+    var log=[]; window.NINEBELOW_EVENT_LOG=log;
+    var origPush=window.dataLayer.push.bind(window.dataLayer);
+    window.dataLayer.push=function(){
+      var args=Array.prototype.slice.call(arguments);
+      args.forEach(function(a){
+        if(a && a[0]==='event'){
+          var rec={event:a[1],params:a[2]||{},t:new Date().toISOString()};
+          log.push(rec);
+          if(console.groupCollapsed){
+            console.groupCollapsed('%c GA4 %c '+rec.event,
+              'background:#1f8ab0;color:#e8eef2;border-radius:2px','color:#1f8ab0;font-weight:600');
+            console.log(rec.params); console.groupEnd();
+          }
+          window.dispatchEvent(new CustomEvent('ninebelow:ga4',{detail:rec}));
+        }
+      });
+      return origPush.apply(null,args);
+    };
+    console.info('%c Nine Below %c analytics demo mode — no data is sent. Inspect NINEBELOW_EVENT_LOG.',
+      'background:#0d1418;color:#e8eef2;padding:2px 6px;border-radius:2px','color:#8098a6');
+  })();
+</script>
+
+<!-- Mirrors snippets/ab-framework.liquid — inline and blocking, before paint -->
+<script id="ab-registry" type="application/json">
+{"age_gate":{"enabled":true,"traffic":100,"variants":{"a":50,"b":50}},
+ "hero_headline":{"enabled":true,"traffic":100,"variants":{"a":50,"b":50}},
+ "hero_image":{"enabled":true,"traffic":100,"variants":{"a":50,"b":50}},
+ "hero_layout":{"enabled":false,"traffic":100,"variants":{"a":50,"b":50}}}
+</script>
+<script>
+(function(){
+  'use strict';
+  var STORE='nb_ab_v1', COOKIE='nb_ab', root=document.documentElement, registry={};
+  try{ registry=JSON.parse(document.getElementById('ab-registry').textContent)||{}; }
+  catch(e){ console.warn('[AB] bad registry JSON'); registry={}; }
+  var stored={};
+  try{ stored=JSON.parse(localStorage.getItem(STORE))||{}; }catch(e){ stored={}; }
+  var qs=new URLSearchParams(location.search), ov=qs.get('ab');
+  if(ov==='reset'){ stored={}; }
+  else if(ov){ ov.split(',').forEach(function(p){ var b=p.split(':'); if(b.length===2) stored[b[0].trim()]=b[1].trim(); }); }
+  function pick(v){ var n=Object.keys(v),t=0,i;
+    for(i=0;i<n.length;i++) t+=Number(v[n[i]])||0;
+    if(t<=0) return n[0];
+    var r=Math.random()*t;
+    for(i=0;i<n.length;i++){ r-=Number(v[n[i]])||0; if(r<=0) return n[i]; }
+    return n[n.length-1]; }
+  var active={}, hide=[];
+  Object.keys(registry).forEach(function(id){
+    var e=registry[id]||{}, v=e.variants||{}, n=Object.keys(v);
+    if(!n.length) return;
+    var control=n[0];
+    if(e.enabled===false){
+      active[id]=null; root.setAttribute('data-ab-'+id,control);
+      n.forEach(function(x){ if(x!==control) hide.push('[data-ab="'+id+':'+x+'"]'); });
+      return; }
+    var a=stored[id];
+    if(!a){ var tr=e.traffic==null?100:Number(e.traffic);
+      a = (Math.random()*100>=tr) ? '__holdout__' : pick(v);
+      stored[id]=a; }
+    var shown = a==='__holdout__' ? control : a;
+    active[id] = a==='__holdout__' ? null : a;
+    root.setAttribute('data-ab-'+id, shown);
+    n.forEach(function(x){ if(x!==shown) hide.push('[data-ab="'+id+':'+x+'"]'); });
+  });
+  try{ localStorage.setItem(STORE,JSON.stringify(stored)); }catch(e){}
+  try{ var flat=Object.keys(stored).map(function(k){return k+':'+stored[k];}).join('|');
+    document.cookie=COOKIE+'='+encodeURIComponent(flat)+';path=/;max-age='+(60*60*24*90)+';SameSite=Lax'; }catch(e){}
+  if(hide.length){ var st=document.createElement('style'); st.id='ab-hide';
+    st.textContent=hide.join(',')+'{display:none !important}'; document.head.appendChild(st); }
+  window.NINEBELOW_AB={ registry:registry, assignments:stored, active:active,
+    get:function(id){return active[id]||null;},
+    params:function(){ var o={},l=[];
+      Object.keys(active).forEach(function(id){ if(!active[id])return;
+        o['ab_'+id]=active[id]; l.push(id+':'+active[id]); });
+      if(l.length) o.ab_variants=l.sort().join('|');
+      return o; } };
+})();
+</script>
+
+<!-- Mirrors snippets/landing-flow.liquid -->
+<script>
+(function(){
+  'use strict';
+  var KEY='nb_flow', root=document.documentElement;
+  var list=['instagram','ig','tiktok','facebook','meta','fb'];
+  function norm(s){ return String(s||'').trim().toLowerCase(); }
+  var qs=new URLSearchParams(location.search), mode=null;
+  var flow=norm(qs.get('flow'));
+  if(flow==='focus'||flow==='ig'||flow==='social') mode='focus';
+  if(flow==='full'||flow==='off') mode='full';
+  if(!mode){ var src=norm(qs.get('utm_source')), med=norm(qs.get('utm_medium'));
+    if(src&&list.indexOf(src)!==-1) mode='focus';
+    else if(med&&list.indexOf(med)!==-1) mode='focus'; }
+  if(!mode&&document.referrer){ var h='';
+    try{ h=new URL(document.referrer).hostname.toLowerCase(); }catch(e){}
+    if(h){ for(var i=0;i<list.length;i++){ if(list[i]&&h.indexOf(list[i])!==-1){ mode='focus'; break; } } } }
+  if(!mode){ try{ mode=sessionStorage.getItem(KEY); }catch(e){} }
+  if(mode==='full'){ try{ sessionStorage.removeItem(KEY); }catch(e){} mode=null; }
+  if(mode==='focus'){ root.setAttribute('data-flow','focus');
+    try{ sessionStorage.setItem(KEY,'focus'); }catch(e){} }
+  window.NINEBELOW_FLOW={ mode: mode||'full', isFocus: mode==='focus' };
+})();
+</script>
+
+<!-- Mirrors snippets/flow-styles.liquid -->
+<style>
+  :root[data-flow="focus"] .header__nav,
+  :root[data-flow="focus"] .header__toggle,
+  :root[data-flow="focus"] .header__mobile { display:none !important; }
+  :root[data-flow="focus"] .header__logo { pointer-events:none; }
+  :root[data-flow="focus"] .footer__cols { display:none !important; }
+  :root[data-flow="focus"] .footer__top { grid-template-columns:1fr !important; padding-bottom:1.5rem; }
+  :root[data-flow="focus"] .hero__secondary,
+  :root[data-flow="focus"] .hero__scroll { display:none !important; }
+  :root[data-flow="focus"] .footer__social { display:none !important; }
+  :root[data-ab-hero_image="b"] .hero__bottle { display:none !important; }
+</style>
+
+<!-- Mirrors snippets/age-gate-head.liquid — blocking, above <body> -->
+<style>
+html.gate-armed:not([data-age="ok"]) body > *:not(#age-gate) { display: none !important; }
+html.gate-armed:not([data-age="ok"]) body { overflow: hidden !important; }
+html[data-age="ok"] #age-gate { display: none !important; }
+html[data-age="ok"] #age-gate.is-leaving { display: grid !important; }
+</style>
+<script>
+(function(){
+  var KEY='nb_age_ok', COOKIE='nb_age_ok';
+  function fromLocal(){ try{ var raw=localStorage.getItem(KEY); if(!raw) return false;
+    var v=JSON.parse(raw); if(v&&v.exp&&Date.now()>v.exp){localStorage.removeItem(KEY);return false;}
+    return !!(v&&v.v); }catch(e){ return false; } }
+  function fromCookie(){ try{ return document.cookie.indexOf(COOKIE+'=1')!==-1; }catch(e){ return false; } }
+  // ?agegate=reset re-opens the panel for QA — see age-gate-head.liquid.
+  function forced(){ try{ return location.search.indexOf('agegate=reset')!==-1; }catch(e){ return false; } }
+  var alreadyIn = !forced() && (fromLocal()||fromCookie());
+  if (forced()){ try{ localStorage.removeItem(KEY); }catch(e){}
+                 try{ document.cookie=COOKIE+'=;path=/;max-age=0;SameSite=Lax'; }catch(e){} }
+  if (alreadyIn) document.documentElement.setAttribute('data-age','ok');
+
+  // Published here, above <body>, so analytics.js and ab.js can defer work
+  // until the visitor is actually through — see age-gate-head.liquid.
+  var passed=false, queue=[];
+  window.NB_AGE_GATE = {
+    get passed(){ return passed; },
+    onPass: function(fn){ if(typeof fn!=='function') return; if(passed) fn(); else queue.push(fn); },
+    _resolve: function(){ if(passed) return; passed=true;
+      var q=queue; queue=[];
+      q.forEach(function(fn){ try{ fn(); }catch(e){ if(window.console) console.error('[age gate] subscriber failed', e); } });
+      try{ window.dispatchEvent(new CustomEvent('ninebelow:gatepassed')); }catch(e){} }
+  };
+  if (alreadyIn) window.NB_AGE_GATE._resolve();
+})();
+</script>
+<script>document.documentElement.className=document.documentElement.className.replace('no-js','js');</script>
+
+<!-- On-screen event inspector: preview only, not part of the theme -->
+<style>
+  .evpanel{
+    position:fixed;right:12px;bottom:12px;z-index:400;
+    width:min(340px,calc(100vw - 24px));
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;
+    background:rgba(10,9,9,.95);border:1px solid var(--cream-16);border-radius:6px;
+    color:var(--cream);backdrop-filter:blur(10px);box-shadow:0 16px 44px rgba(0,0,0,.55);
+  }
+  .evpanel__head{
+    display:flex;align-items:center;gap:8px;padding:8px 10px;
+    border-bottom:1px solid var(--cream-16);cursor:pointer;
+  }
+  .evpanel__dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex:none}
+  .evpanel__title{font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:10px}
+  .evpanel__count{margin-left:auto;color:var(--muted)}
+  .evpanel__list{max-height:230px;overflow:auto;margin:0;padding:4px 0;list-style:none}
+  .evpanel.is-collapsed .evpanel__list,.evpanel.is-collapsed .evpanel__foot{display:none}
+  .evpanel__item{padding:5px 10px;border-bottom:1px solid rgba(242,228,193,.06);display:flex;gap:8px}
+  .evpanel__name{color:#7fd4a0;flex:none}
+  .evpanel__meta{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .evpanel__foot{padding:6px 10px;border-top:1px solid var(--cream-16);color:var(--muted);font-size:10px}
+  @media print{.evpanel{display:none}}
+  /* Keep clear of the sticky buy bar on phones */
+  @media (max-width:749px){
+    .evpanel{bottom:calc(12px + 76px)}
+    .evpanel__list{max-height:150px}
+  }
+</style>
+</head>
+
+<body class="template-index">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<!-- ================= AGE GATE ================= -->
+<div class="age-gate" id="age-gate" role="dialog" aria-modal="true" aria-label="Age verification">
+  <div class="age-gate__bg" aria-hidden="true"></div>
+
+  <noscript>
+    <div class="age-gate__panel">
+      <div class="age-gate__inner">
+        <div class="age-gate__wordmark">Nine Below</div>
+        <h1 class="age-gate__heading">You must be at least 21 to purchase alcohol</h1>
+        <p class="age-gate__legal">Confirming your age needs JavaScript, which is turned off in this browser. Please enable it and reload.</p>
+      </div>
+    </div>
+  </noscript>
+  <div class="age-gate__panel">
+
+    <!-- Arm A — one tap (control) -->
+    <div class="age-gate__arm" data-gate-arm="a">
+      <div class="age-gate__inner" data-gate-step="ask">
+        <div class="age-gate__wordmark">Nine Below</div>
+        <h1 class="age-gate__heading" id="age-gate-heading-a">You must be at least 21 to purchase alcohol</h1>
+        <div class="age-gate__actions">
+          <button type="button" class="btn btn--primary" data-gate-confirm>Yes</button>
+          <button type="button" class="btn btn--ghost" data-gate-deny>No</button>
+        </div>
+        <p class="age-gate__legal">By entering you agree to our <a href="#">Terms of Use</a> and <a href="#">Privacy Policy</a>.</p>
+      </div>
+      <div class="age-gate__inner age-gate__inner--deny" data-gate-step="deny" hidden>
+        <h2 class="age-gate__heading">You're not old enough to view this content.</h2>
+        <button type="button" class="btn btn--ghost" data-gate-back>Go back</button>
+      </div>
+    </div>
+
+    <!-- Arm B — birthdate form, as on the live site -->
+    <div class="age-gate__arm" data-gate-arm="b">
+      <div class="age-gate__inner" data-gate-step="ask">
+        <div class="age-gate__wordmark">Nine Below</div>
+        <p class="age-gate__eyebrow">Welcome</p>
+        <h1 class="age-gate__heading" id="age-gate-heading-b">Are you of legal drinking age?</h1>
+        <form class="dob" data-gate-form autocomplete="off" novalidate>
+          <div class="dob__fields">
+            <label class="dob__field">
+              <span class="dob__label">Month</span>
+              <input class="dob__input" data-gate-mm type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" placeholder="MM" aria-label="Birth month" required>
+            </label>
+            <label class="dob__field">
+              <span class="dob__label">Day</span>
+              <input class="dob__input" data-gate-dd type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" placeholder="DD" aria-label="Birth day" required>
+            </label>
+            <label class="dob__field">
+              <span class="dob__label">Birth year</span>
+              <input class="dob__input" data-gate-yyyy type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="YYYY" aria-label="Birth year" required>
+            </label>
+          </div>
+          <p class="dob__error" data-gate-error role="alert" hidden></p>
+          <button type="submit" class="btn btn--primary btn--block">Confirm &amp; Enter</button>
+        </form>
+        <p class="age-gate__legal">By entering you agree to our <a href="#">Terms of Use</a> and <a href="#">Privacy Policy</a>.</p>
+      </div>
+      <div class="age-gate__inner age-gate__inner--deny" data-gate-step="deny" hidden>
+        <h2 class="age-gate__heading">You're not old enough to view this content.</h2>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================= ANNOUNCEMENT ================= -->
+<div class="announce" data-announce data-dismissible>
+  <div class="announce__inner">
+    <div class="announce__track" data-announce-track>
+      <p class="announce__item" data-announce-item>Limited winter release</p>
+      <p class="announce__item" data-announce-item hidden>Free shipping on 2+ bottles</p>
+      <p class="announce__item" data-announce-item hidden>Nine times distilled.</p>
+    </div>
+    <button type="button" class="announce__close" data-announce-close aria-label="Dismiss announcement">&times;</button>
+  </div>
+</div>
+
+<!-- ================= HEADER ================= -->
+<header class="header header--sticky" data-header role="banner">
+  <div class="header__inner">
+    <a href="#hero" class="header__logo" data-track-cta="logo" aria-label="Nine Below — home">
+      <span class="header__wordmark">Nine Below</span>
+    </a>
+    <nav class="header__nav" aria-label="Primary">
+      <ul class="header__list">
+        <li><a href="#the-vodka" class="header__link" data-track-cta="nav:the-vodka">The Vodka</a></li>
+        <li><a href="#tasting" class="header__link" data-track-cta="nav:tasting">Tasting</a></li>
+        <li><a href="#craft" class="header__link" data-track-cta="nav:the-craft">The Craft</a></li>
+        <li><a href="#serve" class="header__link" data-track-cta="nav:serve">Serve</a></li>
+        <li><a href="#faq" class="header__link" data-track-cta="nav:faq">FAQ</a></li>
+      </ul>
+    </nav>
+    <div class="header__actions">
+      <div class="header__cta" data-header-cta hidden>
+        <div class="buybtn buybtn--sm" data-buy-root data-location="header">
+          <button type="button" class="btn btn--primary buybtn__btn" data-buy-trigger data-location="header"
+                  aria-label="Order Now — Nine Below Winter Wheat Vodka">
+            <span class="buybtn__label">Order Now</span>
+            <span class="buybtn__spinner" aria-hidden="true"></span>
+          </button>
+          <div class="buybtn__vendor" data-buy-vendor-slot hidden></div>
+        </div>
+      </div>
+      <button type="button" class="header__toggle" data-nav-toggle aria-expanded="false" aria-controls="mobile-nav" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+  <div class="header__mobile" id="mobile-nav" data-mobile-nav hidden>
+    <ul class="header__mobile-list">
+      <li><a href="#the-vodka" data-track-cta="nav-mobile:the-vodka">The Vodka</a></li>
+      <li><a href="#tasting" data-track-cta="nav-mobile:tasting">Tasting</a></li>
+      <li><a href="#craft" data-track-cta="nav-mobile:the-craft">The Craft</a></li>
+      <li><a href="#serve" data-track-cta="nav-mobile:serve">Serve</a></li>
+      <li><a href="#faq" data-track-cta="nav-mobile:faq">FAQ</a></li>
+    </ul>
+    <div class="header__mobile-cta">
+      <div class="buybtn buybtn--md buybtn--full" data-buy-root data-location="mobile-nav">
+        <button type="button" class="btn btn--primary buybtn__btn" data-buy-trigger data-location="mobile-nav">
+          <span class="buybtn__label">Order Now</span>
+          <span class="buybtn__sep" aria-hidden="true">·</span>
+          <span class="buybtn__price">$34.99</span>
+          <span class="buybtn__spinner" aria-hidden="true"></span>
+        </button>
+        <div class="buybtn__vendor" data-buy-vendor-slot hidden></div>
+        <p class="buybtn__legal">Must be 21 years of age or older to purchase</p>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main id="main" role="main">
+
+  <!-- ================= HERO ================= -->
+  <section class="hero" id="hero" data-section-name="hero">
+    <picture class="hero__bg" aria-hidden="true" data-ab="hero_image:a">
+      <source media="(max-width: 899px)" srcset="hero-a-mobile.webp" sizes="100vw">
+      <img src="hero-a.webp" srcset="hero-a-900.webp 900w, hero-a.webp 1344w"
+           sizes="100vw" alt="" fetchpriority="high" decoding="async">
+    </picture>
+    <picture class="hero__bg" aria-hidden="true" data-ab="hero_image:b">
+      <source media="(max-width: 899px)" srcset="hero-b-mobile.webp" sizes="100vw">
+      <img src="hero-b.webp" srcset="hero-b-900.webp 900w, hero-b.webp 1344w"
+           sizes="100vw" alt="" decoding="async">
+    </picture>
+    <div class="hero__scrim" aria-hidden="true"></div>
+
+    <div class="hero__inner">
+      <div class="hero__content">
+        <p class="eyebrow hero__eyebrow">Nordic winter wheat vodka</p>
+        <h1 class="hero__title" data-ab="hero_headline:a">Nine distillations. One clean finish.</h1>
+        <h1 class="hero__title" data-ab="hero_headline:b">Distilled nine times. Filtered at nine below.</h1>
+        <p class="hero__sub">Winter wheat from the sixtieth parallel, distilled nine times, then filtered at nine degrees below zero through glacial basalt. Nothing added, nothing left behind.</p>
+
+        <ul class="hero__proof">
+          <li><span class="hero__proof-value">9x</span><span class="hero__proof-label">Distillations</span></li>
+          <li><span class="hero__proof-value">−9°C</span><span class="hero__proof-label">Filtration</span></li>
+          <li><span class="hero__proof-value">Nordic</span><span class="hero__proof-label">Winter wheat</span></li>
+        </ul>
+
+        <div class="hero__cta">
+          <div class="buybtn buybtn--lg" data-buy-root data-location="hero">
+            <button type="button" class="btn btn--primary buybtn__btn" data-buy-trigger data-location="hero"
+                    aria-label="Order Now — Nine Below Winter Wheat Vodka">
+              <span class="buybtn__label">Order Now</span>
+              <span class="buybtn__sep" aria-hidden="true">·</span>
+              <span class="buybtn__price">$34.99</span>
+              <span class="buybtn__spinner" aria-hidden="true"></span>
+            </button>
+            <div class="buybtn__vendor" data-buy-vendor-slot hidden></div>
+            <p class="buybtn__legal">Must be 21 years of age or older to purchase</p>
+          </div>
+          <a class="btn btn--ghost hero__secondary" href="#the-vodka" data-track-cta="hero-secondary">Explore the vodka</a>
+        </div>
+
+        <ul class="trustbar">
+          <li>Ships in 2–4 business days</li>
+          <li>Adult signature required</li>
+          <li>Secure checkout</li>
+        </ul>
+      </div>
+
+      <div class="hero__bottle">
+        <img src="../assets/bottle.webp"
+             srcset="../assets/bottle-600.webp 211w, ../assets/bottle.webp 421w"
+             sizes="(max-width: 899px) 55vw, 32vw"
+             alt="Nine Below — Winter Wheat Vodka bottle"
+             width="421" height="1200" fetchpriority="high" decoding="async">
+      </div>
+    </div>
+
+    <a class="hero__scroll" href="#the-vodka" aria-label="Scroll to product details" data-track-cta="hero-scroll-cue"><span></span></a>
+  </section>
+
+  <!-- ================= PRODUCT STORY ================= -->
+  <section class="section section--vodka" id="the-vodka" data-section-name="product_story">
+    <div class="wrap wrap--split">
+      <div class="rum__media">
+        <div class="rum__detail">
+          <img src="detail.webp" srcset="detail-600.webp 600w, detail.webp 1024w"
+               sizes="(max-width: 899px) 90vw, 44vw"
+               alt="Nine Below — bottle detail"
+               width="1024" height="1024" loading="lazy" decoding="async">
+        </div>
+      </div>
+
+      <div class="rum__body">
+        <p class="eyebrow">The Winter Wheat</p>
+        <h2 class="h2">Clarity is subtraction, not addition.</h2>
+        <div class="rte">
+          <p>Nine Below is distilled from winter wheat grown above the sixtieth parallel, where the cold slows the grain and concentrates the starch.</p>
+          <p>It runs through the column nine times, then rests against glacial basalt at nine degrees below zero. Cold filtration strips the harshness that carbon alone leaves behind. No sugar, no glycerol, no citrus masking.</p>
+        </div>
+        <dl class="specs">
+          <div class="specs__row"><dt>Winter wheat</dt><dd>Nordic</dd></div>
+          <div class="specs__row"><dt>Distillations</dt><dd>Nine times</dd></div>
+          <div class="specs__row"><dt>Grain</dt><dd>Winter wheat, 60th parallel</dd></div>
+          <div class="specs__row"><dt>Filtration</dt><dd>Glacial basalt at −9°C</dd></div>
+          <div class="specs__row"><dt>Bottle</dt><dd>750ml</dd></div>
+          <div class="specs__row"><dt>Strength</dt><dd>40% ABV</dd></div>
+        </dl>
+        <div class="rum__cta">
+          <div class="buybtn buybtn--md" data-buy-root data-location="product-story">
+            <button type="button" class="btn btn--primary buybtn__btn" data-buy-trigger data-location="product-story">
+              <span class="buybtn__label">Order Now</span>
+              <span class="buybtn__sep" aria-hidden="true">·</span>
+              <span class="buybtn__price">$34.99</span>
+              <span class="buybtn__spinner" aria-hidden="true"></span>
+            </button>
+            <div class="buybtn__vendor" data-buy-vendor-slot hidden></div>
+            <p class="buybtn__legal">Must be 21 years of age or older to purchase</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= TASTING ================= -->
+  <section class="section section--tasting" id="tasting" data-section-name="tasting_notes">
+    <div class="wrap">
+      <header class="section__head">
+        <p class="eyebrow">Tasting</p>
+        <h2 class="h2">How it drinks</h2>
+        <p class="lead">Best judged cold but not frozen solid — about −5°C, in a small stemmed glass.</p>
+      </header>
+      <div class="notes">
+        <article class="notes__card">
+          <p class="notes__step">01</p>
+          <h3 class="notes__title">Nose</h3>
+          <p class="notes__body">Almost silent at first. Cold grain, a trace of white pepper, then a faint sweetness like wet stone.</p>
+          <ul class="notes__tags"><li>Cold grain</li><li>White pepper</li><li>Wet stone</li><li>Cream</li></ul>
+        </article>
+        <article class="notes__card">
+          <p class="notes__step">02</p>
+          <h3 class="notes__title">Palate</h3>
+          <p class="notes__body">Full and rounded rather than sharp. The wheat gives a soft cereal weight that carries the alcohol instead of hiding behind it.</p>
+          <ul class="notes__tags"><li>Soft cereal</li><li>Vanilla</li><li>Sea salt</li><li>Anise</li></ul>
+        </article>
+        <article class="notes__card">
+          <p class="notes__step">03</p>
+          <h3 class="notes__title">Filtration</h3>
+          <p class="notes__body">Short and clean by design. No burn, no lingering sweetness — the glass should read empty.</p>
+          <ul class="notes__tags"><li>Clean</li><li>Brief</li><li>Mineral</li></ul>
+        </article>
+      </div>
+      <p class="notes__disclaimer">Placeholder notes — replace with the distiller's official tasting panel before launch.</p>
+    </div>
+  </section>
+
+  <!-- ================= CRAFT ================= -->
+  <section class="section section--craft" id="craft" data-section-name="craft_process">
+    <div class="wrap">
+      <header class="section__head section__head--center">
+        <p class="eyebrow">The craft</p>
+        <h2 class="h2">Nine passes, one temperature</h2>
+        <p class="lead">Every step here removes something. None of them add.</p>
+      </header>
+      <figure class="craft__media">
+        <img src="craft.webp" srcset="craft-900.webp 900w, craft.webp 1344w"
+             sizes="(min-width: 1280px) 1280px, 100vw"
+             alt="Nine Below distillation" width="1344" height="768" loading="lazy" decoding="async">
+      </figure>
+
+      <ol class="timeline">
+        <li class="timeline__item"><div class="timeline__marker" aria-hidden="true"></div>
+          <div class="timeline__content"><p class="timeline__span">Autumn</p><h3 class="timeline__title">Nordic distillation</h3>
+          <p class="timeline__body">Distilled in the Nordic, then laid down without colouring or added sugar.</p></div></li>
+        <li class="timeline__item"><div class="timeline__marker" aria-hidden="true"></div>
+          <div class="timeline__content"><p class="timeline__span">Winter</p><h3 class="timeline__title">Mash and ferment</h3>
+          <p class="timeline__body">A slow, cool ferment over five days. Speed makes esters; patience makes a neutral, clean wash.</p></div></li>
+        <li class="timeline__item"><div class="timeline__marker" aria-hidden="true"></div>
+          <div class="timeline__content"><p class="timeline__span">The ninth pass</p><h3 class="timeline__title">Nine distillations</h3>
+          <p class="timeline__body">Nine passes through the column. Each one narrows the cut and takes a little more away — the last is almost entirely discarded.</p></div></li>
+        <li class="timeline__item"><div class="timeline__marker" aria-hidden="true"></div>
+          <div class="timeline__content"><p class="timeline__span">Bottling</p><h3 class="timeline__title">Sub-zero filtration</h3>
+          <p class="timeline__body">Chilled to −9°C and passed through glacial basalt, then bottled without dilution beyond proofing water.</p></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ================= SERVE ================= -->
+  <section class="section section--serve" id="serve" data-section-name="serve">
+    <div class="wrap">
+      <header class="section__head">
+        <p class="eyebrow">Serve</p>
+        <h2 class="h2">Three ways to serve it</h2>
+        <p class="lead">Clean enough to drink cold and plain, structured enough to hold a stirred drink.</p>
+      </header>
+      <div class="serves">
+        <article class="serve">
+          <div class="serve__media"><img src="serve-1.webp" sizes="(max-width: 749px) 88vw, 30vw" alt="From the freezer" width="700" height="1023" loading="lazy" decoding="async"></div>
+          <div class="serve__body"><h3 class="serve__title">From the freezer</h3>
+            <p class="serve__method">Keep the bottle in the freezer. Pour into a chilled glass and drink within a few minutes, before it warms.</p>
+            <ul class="serve__ingredients"><li>60ml Nine Below Winter Wheat</li></ul></div>
+        </article>
+        <article class="serve">
+          <div class="serve__media"><img src="serve-2.webp" sizes="(max-width: 749px) 88vw, 30vw" alt="Dry Martini" width="700" height="1023" loading="lazy" decoding="async"></div>
+          <div class="serve__body"><h3 class="serve__title">Dry Martini</h3>
+            <p class="serve__method">Stir hard over ice for thirty seconds, strain into a frozen coupe, twist a wide lemon peel over the top.</p>
+            <ul class="serve__ingredients"><li>60ml Nine Below Winter Wheat</li><li>10ml dry vermouth</li><li>Lemon peel</li><li>Olive, if you must</li></ul></div>
+        </article>
+        <article class="serve">
+          <div class="serve__media"><img src="serve-3.webp" sizes="(max-width: 749px) 88vw, 30vw" alt="Soda and lime" width="700" height="1023" loading="lazy" decoding="async"></div>
+          <div class="serve__body"><h3 class="serve__title">Soda and lime</h3>
+            <p class="serve__method">Build over plenty of ice in a tall glass. Add the lime last so the oils sit on top.</p>
+            <ul class="serve__ingredients"><li>50ml Nine Below Winter Wheat</li><li>120ml chilled soda water</li><li>Fresh lime wedge</li></ul></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SOCIAL PROOF ================= -->
+  <section class="section section--proof" id="proof" data-section-name="social_proof">
+    <div class="wrap">
+      <header class="section__head section__head--center">
+        <p class="eyebrow">Mock press — fictional brand</p>
+        <h2 class="h2">What the (invented) critics said</h2>
+      </header>
+      <div class="quotes">
+        <figure class="quote">
+          <blockquote>Almost nothing on the nose, and that is the point. The wheat only shows once it warms in the glass.</blockquote>
+          <figcaption><span class="quote__source">The Nordic Spirits Review</span><span class="quote__detail">Fictional publication — mock content</span></figcaption>
+        </figure>
+        <figure class="quote">
+          <blockquote>A vodka built by removal rather than addition. The finish is over almost before you notice it.</blockquote>
+          <figcaption><span class="quote__source">Cold Cellar Quarterly</span><span class="quote__detail">Fictional publication — mock content</span></figcaption>
+        </figure>
+        <figure class="quote">
+          <blockquote>Sub-zero filtration is not new. Doing it nine times and admitting what it costs is.</blockquote>
+          <figcaption><span class="quote__source">Grain &amp; Glass</span><span class="quote__detail">Fictional publication — mock content</span></figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FAQ ================= -->
+  <section class="section section--faq" id="faq" data-section-name="faq">
+    <div class="wrap wrap--narrow">
+      <header class="section__head section__head--center">
+        <p class="eyebrow">Questions</p>
+        <h2 class="h2">Before you order</h2>
+      </header>
+      <div class="faq">
+        <details class="faq__item" data-faq-item data-question="Where do you ship?">
+          <summary class="faq__q"><span>Where do you ship?</span><span class="faq__icon" aria-hidden="true"></span></summary>
+          <div class="faq__a rte"><p>Orders are fulfilled by our licensed retail partner through BottleNexus. Available destinations are confirmed at checkout — spirits shipping is regulated state by state, so a small number of addresses cannot be served. Confirm and list your live states here before launch.</p></div>
+        </details>
+        <details class="faq__item" data-faq-item data-question="How long does delivery take?">
+          <summary class="faq__q"><span>How long does delivery take?</span><span class="faq__icon" aria-hidden="true"></span></summary>
+          <div class="faq__a rte"><p>Typically 2–4 business days after the order is released, depending on destination. You will receive tracking by email once it ships.</p></div>
+        </details>
+        <details class="faq__item" data-faq-item data-question="Does someone need to sign for it?">
+          <summary class="faq__q"><span>Does someone need to sign for it?</span><span class="faq__icon" aria-hidden="true"></span></summary>
+          <div class="faq__a rte"><p>Yes. An adult aged 21 or over must be present with valid ID to accept the delivery. Carriers cannot leave alcohol unattended.</p></div>
+        </details>
+        <details class="faq__item" data-faq-item data-question="What if the bottle arrives damaged?">
+          <summary class="faq__q"><span>What if the bottle arrives damaged?</span><span class="faq__icon" aria-hidden="true"></span></summary>
+          <div class="faq__a rte"><p>Contact us within 48 hours of delivery with a photograph and we will arrange a replacement or refund through our fulfilment partner.</p></div>
+        </details>
+        <details class="faq__item" data-faq-item data-question="Is this a limited release?">
+          <summary class="faq__q"><span>Is this a limited release?</span><span class="faq__icon" aria-hidden="true"></span></summary>
+          <div class="faq__a rte"><p>The winter release is bottled once a year from a single harvest. Add real allocation numbers here once confirmed — do not imply scarcity you cannot substantiate.</p></div>
+        </details>
+        <details class="faq__item" data-faq-item data-question="How should I store it?">
+          <summary class="faq__q"><span>How should I store it?</span><span class="faq__icon" aria-hidden="true"></span></summary>
+          <div class="faq__a rte"><p>The freezer is fine and arguably preferable. Vodka will not freeze at this strength, and an opened bottle keeps almost indefinitely.</p></div>
+        </details>
+      </div>
+      <div class="faq__cta">
+        <p>Ready when you are.</p>
+        <div class="buybtn buybtn--md" data-buy-root data-location="faq">
+          <button type="button" class="btn btn--primary buybtn__btn" data-buy-trigger data-location="faq">
+            <span class="buybtn__label">Order Now</span>
+            <span class="buybtn__sep" aria-hidden="true">·</span>
+            <span class="buybtn__price">$34.99</span>
+            <span class="buybtn__spinner" aria-hidden="true"></span>
+          </button>
+          <div class="buybtn__vendor" data-buy-vendor-slot hidden></div>
+          <p class="buybtn__legal">Must be 21 years of age or older to purchase</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SIGNUP ================= -->
+  <section class="section section--signup" id="updates" data-section-name="email_capture">
+    <div class="wrap wrap--narrow">
+      <div class="signup">
+        <p class="eyebrow">Allocation list</p>
+        <h2 class="h2">Get first access to the next release</h2>
+        <p class="lead">The Winter Wheat is limited. Join the list and we will email you before the next bottling goes public — no more than a few times a year.</p>
+        <form class="signup__form" data-signup-form novalidate>
+          <div class="signup__row">
+            <label class="visually-hidden" for="signup-email">Email address</label>
+            <input type="email" id="signup-email" name="email" placeholder="you@example.com" autocomplete="email" required data-signup-email>
+            <button type="submit" class="btn btn--primary" data-signup-submit>Join the list</button>
+          </div>
+          <p class="signup__consent">By joining you confirm you are of legal drinking age and agree to receive email from Nine Below. Unsubscribe any time.</p>
+          <p class="signup__msg signup__msg--ok" data-signup-success hidden>You're on the list. Watch your inbox.</p>
+          <p class="signup__msg signup__msg--err" data-signup-error hidden>Something went wrong. Please try again.</p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="footer" role="contentinfo">
+  <div class="wrap">
+    <div class="footer__top">
+      <div class="footer__brand">
+        <span class="footer__wordmark">Nine Below</span>
+        <p class="footer__tagline">Cold enough to be clean.</p>
+      </div>
+      <div class="footer__cols">
+        <div class="footer__col"><h3 class="footer__col-title">Explore</h3>
+          <ul>
+            <li><a href="#hero" data-track-cta="footer:home">Home</a></li>
+            <li><a href="#the-vodka" data-track-cta="footer:the-vodka">The Vodka</a></li>
+            <li><a href="#tasting" data-track-cta="footer:tasting-notes">Tasting notes</a></li>
+            <li><a href="#serve" data-track-cta="footer:serve">Serve</a></li>
+            <li><a href="#faq" data-track-cta="footer:faq">FAQ</a></li>
+          </ul>
+        </div>
+        <div class="footer__col"><h3 class="footer__col-title">Company</h3>
+          <ul>
+            <li><a href="#" data-track-cta="footer:contact">Contact</a></li>
+            <li><a href="#" data-track-cta="footer:privacy-policy">Privacy Policy</a></li>
+            <li><a href="#" data-track-cta="footer:terms-of-use">Terms of Use</a></li>
+            <li><a href="#faq" data-track-cta="footer:shipping">Shipping</a></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+    <div class="footer__legal">
+      <p class="footer__privacy"><a href="#" data-privacy-choices>Your privacy choices</a></p>
+      <p class="footer__responsibility">PLEASE DO NOT SHARE WITH ANYONE UNDER THE LEGAL PURCHASE AGE FOR ALCOHOL. DRINK RESPONSIBLY. DON'T DRINK &amp; DRIVE.</p>
+      <p class="footer__copy">&copy; 2026 Nine Below. All rights reserved.</p>
+      <p class="footer__attribution">Distilled and bottled in small batches</p>
+    </div>
+  </div>
+</footer>
+
+<!-- ================= STICKY BUY BAR ================= -->
+<div class="stickybar" id="sticky-buy-bar" data-sticky-bar hidden>
+  <div class="stickybar__info">
+    <span class="stickybar__name">Nine Below — Winter Wheat Vodka</span>
+    <span class="stickybar__meta">750ml · 40% ABV · $34.99</span>
+  </div>
+  <div class="buybtn buybtn--sm" data-buy-root data-location="sticky">
+    <button type="button" class="btn btn--primary buybtn__btn" data-buy-trigger data-location="sticky">
+      <span class="buybtn__label">Order Now</span>
+      <span class="buybtn__spinner" aria-hidden="true"></span>
+    </button>
+    <div class="buybtn__vendor" data-buy-vendor-slot hidden></div>
+  </div>
+</div>
+
+<!-- No cookie banner: Shopify's native one owns that in production.
+     See snippets/consent-bridge.liquid. -->
+
+<!-- Mirrors the #theme-config blob emitted by layout/theme.liquid -->
+<script id="theme-config" type="application/json">
+{
+  "ga4": { "enabled": true, "measurementId": "G-XXXXXXXXXX", "debug": true, "consentMode": true, "trackScroll": true, "trackOutbound": true },
+  "bottleNexus": { "enabled": true, "demoMode": true, "token": "DEMO-BN-TOKEN-0000-0000-0000", "productId": "0000", "behavior": "sidebar", "buttonText": "Order Now" },
+  "product": { "name": "Nine Below — Winter Wheat Vodka", "price": "34.99", "currency": "USD", "sku": "NB-WW-750", "size": "750ml", "abv": "40% ABV", "availability": "PreOrder" },
+  "ageGate": { "enabled": true, "rememberDays": 30, "minAge": 21, "invalidText": "Please enter a valid birthdate." },
+  "klaviyo": { "companyId": "" }
+}
+</script>
+
+<script src="../assets/analytics.js" defer></script>
+<script src="../assets/ab.js" defer></script>
+<script src="../assets/age-gate.js" defer></script>
+<script src="../assets/bottlenexus.js" defer></script>
+<script src="../assets/theme.js" defer></script>
+
+<!-- Preview-only event inspector. Off by default; add ?debug=1 to the URL to show it. -->
+<script>
+(function(){
+  var params = new URLSearchParams(location.search);
+  if (params.get('debug') !== '1') {
+    console.info(
+      '%c Nine Below %c Event inspector hidden. Add ?debug=1 to the URL to show it, ' +
+      'or inspect NINEBELOW_EVENT_LOG directly.',
+      'background:#0d1418;color:#e8eef2;padding:2px 6px;border-radius:2px',
+      'color:#8098a6'
+    );
+    return;
+  }
+
+  var panel=document.createElement('div');
+  panel.className='evpanel';
+  panel.innerHTML=
+    '<div class="evpanel__head"><span class="evpanel__dot"></span>'+
+    '<span class="evpanel__title">GA4 events</span>'+
+    '<span class="evpanel__count">0</span></div>'+
+    '<ul class="evpanel__list"></ul>'+
+    '<div class="evpanel__foot">Demo mode — nothing is sent. Click to collapse.</div>';
+  document.body.appendChild(panel);
+
+  var list=panel.querySelector('.evpanel__list');
+  var count=panel.querySelector('.evpanel__count');
+  var n=0;
+
+  panel.querySelector('.evpanel__head').addEventListener('click',function(){
+    panel.classList.toggle('is-collapsed');
+  });
+
+  window.addEventListener('ninebelow:ga4',function(e){
+    n++; count.textContent=n;
+    var keys=Object.keys(e.detail.params||{}).filter(function(k){return k!=='items'});
+    var meta=keys.slice(0,3).map(function(k){
+      var v=e.detail.params[k];
+      return k+'='+(typeof v==='object'?'{…}':String(v).slice(0,18));
+    }).join(' ');
+    var li=document.createElement('li');
+    li.className='evpanel__item';
+    li.innerHTML='<span class="evpanel__name"></span><span class="evpanel__meta"></span>';
+    li.querySelector('.evpanel__name').textContent=e.detail.event;
+    li.querySelector('.evpanel__meta').textContent=meta;
+    list.insertBefore(li,list.firstChild);
+    while(list.children.length>60) list.removeChild(list.lastChild);
+  });
+})();
+</script>
+</body>
+</html>

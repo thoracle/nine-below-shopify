@@ -1,0 +1,25 @@
+{%- comment -%}
+  Sticky mobile buy bar.
+
+  The current site has exactly one buy affordance, in the hero. On a phone it
+  scrolls out of view within one swipe and never returns, so every visitor who
+  reads the product story has to scroll back up to act. A persistent bar is
+  consistently one of the highest-yield changes on a single-product mobile page.
+
+  Revealed only after the hero CTA leaves the viewport, so it never competes
+  with the primary button.
+{%- endcomment -%}
+
+<div class="stickybar" id="sticky-buy-bar" data-sticky-bar hidden>
+  <div class="stickybar__info">
+    <span class="stickybar__name">{{ settings.product_name }}</span>
+    <span class="stickybar__meta">
+      {{ settings.product_size }}
+      {%- if settings.product_abv != blank %} · {{ settings.product_abv }}{% endif -%}
+      {%- if settings.product_price != blank %}
+        · {{ settings.product_currency | replace: 'USD', '$' }}{{ settings.product_price }}
+      {%- endif -%}
+    </span>
+  </div>
+  {% render 'buy-button', location: 'sticky', size: 'sm' %}
+</div>

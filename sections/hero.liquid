@@ -1,0 +1,292 @@
+{%- comment -%}
+  Hero.
+
+  Changes against the live hero, each one a known conversion lever:
+    · The headline states what the product IS. "Crafted out of love — with
+      balance, elegance, and time." is a tagline, not a value proposition; a
+      first-time visitor who lands cold cannot tell it is vodka.
+    · Price, size and ABV appear above the fold. Hiding price on a considered
+      purchase reliably suppresses intent and inflates bounce.
+    · The seven-year age statement is promoted to a scannable proof row rather
+      than being buried mid-paragraph.
+    · The buy button paints immediately instead of waiting on a vendor script.
+    · The background image is preloaded and served responsively.
+{%- endcomment -%}
+
+{%- liquid
+  assign bg = section.settings.background_image
+  assign bg_mobile = section.settings.background_image_mobile
+  assign bottle = section.settings.bottle_image
+
+  assign bg_b = section.settings.background_image_b
+  assign bg_b_mobile = section.settings.background_image_b_mobile
+
+  # Fall back to the desktop image so a single upload still works everywhere.
+  if bg_mobile == blank
+    assign bg_mobile = bg
+  endif
+  if bg_b_mobile == blank
+    assign bg_b_mobile = bg_b
+  endif
+
+  # Mock art ships with this build so the demo works out of the box. Uploading
+  # in the theme editor overrides it; the experiment runs either way.
+  assign use_bundled = false
+  if bg == blank
+    assign use_bundled = true
+  endif
+
+  assign image_test = false
+  if settings.ab_enabled
+    if bg_b != blank or use_bundled
+      assign image_test = true
+    endif
+  endif
+-%}
+
+{%- comment -%}
+  Art-directed hero background.
+
+  Desktop tiers run to 2560 so a 1440px laptop at 2x DPR isn't served an
+  upscaled image. Shopify only ever downsizes — the master upload must be at
+  least as wide as the top tier or it silently falls back to the original's
+  real width.
+
+  Mobile gets its own crop. Without it a 16:9 desktop image is centre-cropped
+  by `object-fit: cover` on a portrait phone, which slices off most of both
+  sides. The breakpoint matches the layout switch at 900px (where the bottle
+  hides and the sticky buy bar appears).
+
+  Both preloads carry `media`, so the browser fetches exactly one — preloading
+  both would waste bandwidth on the LCP image.
+{%- endcomment -%}
+{%- if bg != blank or use_bundled -%}
+  <link rel="preload" as="image" media="(min-width: 900px)"
+        href="{% if use_bundled %}{{ 'hero-a.webp' | asset_url }}{% else %}{{ bg | image_url: width: 1920 }}{% endif %}"
+        imagesizes="100vw" fetchpriority="high">
+  <link rel="preload" as="image" media="(max-width: 899px)"
+        href="{% if use_bundled %}{{ 'hero-a-mobile.webp' | asset_url }}{% else %}{{ bg_mobile | image_url: width: 900 }}{% endif %}"
+        imagesizes="100vw" fetchpriority="high">
+{%- endif -%}
+
+<section class="hero" id="hero" data-section-name="hero">
+  {%- if bg != blank or use_bundled -%}
+    <picture class="hero__bg" aria-hidden="true"{% if image_test %} data-ab="hero_image:a"{% endif %}>
+      {%- if use_bundled -%}
+        <source media="(max-width: 899px)" srcset="{{ 'hero-a-mobile.webp' | asset_url }}" sizes="100vw">
+        <img src="{{ 'hero-a.webp' | asset_url }}"
+             srcset="{{ 'hero-a-900.webp' | asset_url }} 900w, {{ 'hero-a.webp' | asset_url }} 1344w"
+             sizes="100vw" alt="" fetchpriority="high" decoding="async">
+      {%- else -%}
+        <source media="(max-width: 899px)"
+                srcset="{{ bg_mobile | image_url: width: 640 }} 640w,
+                        {{ bg_mobile | image_url: width: 900 }} 900w,
+                        {{ bg_mobile | image_url: width: 1200 }} 1200w,
+                        {{ bg_mobile | image_url: width: 1500 }} 1500w"
+                sizes="100vw">
+        <img src="{{ bg | image_url: width: 1920 }}"
+             srcset="{{ bg | image_url: width: 1100 }} 1100w,
+                     {{ bg | image_url: width: 1500 }} 1500w,
+                     {{ bg | image_url: width: 1920 }} 1920w,
+                     {{ bg | image_url: width: 2560 }} 2560w"
+             sizes="100vw" alt="" fetchpriority="high" decoding="async">
+      {%- endif -%}
+    </picture>
+  {%- endif -%}
+
+  {%- comment -%}
+    Image test arm B — founder-led rather than product-only. The bottle cut-out
+    is hidden in this arm (see theme.css) so the two don't compete for the same
+    space; a busy photograph behind a floating bottle reads as clutter.
+  {%- endcomment -%}
+  {%- if image_test -%}
+    <picture class="hero__bg" aria-hidden="true" data-ab="hero_image:b">
+      {%- if bg_b == blank -%}
+        <source media="(max-width: 899px)" srcset="{{ 'hero-b-mobile.webp' | asset_url }}" sizes="100vw">
+        <img src="{{ 'hero-b.webp' | asset_url }}"
+             srcset="{{ 'hero-b-900.webp' | asset_url }} 900w, {{ 'hero-b.webp' | asset_url }} 1344w"
+             sizes="100vw" alt="" decoding="async">
+      {%- else -%}
+        <source media="(max-width: 899px)"
+                srcset="{{ bg_b_mobile | image_url: width: 640 }} 640w,
+                        {{ bg_b_mobile | image_url: width: 900 }} 900w,
+                        {{ bg_b_mobile | image_url: width: 1200 }} 1200w"
+                sizes="100vw">
+        <img src="{{ bg_b | image_url: width: 1920 }}"
+             srcset="{{ bg_b | image_url: width: 1100 }} 1100w,
+                     {{ bg_b | image_url: width: 1500 }} 1500w,
+                     {{ bg_b | image_url: width: 1920 }} 1920w"
+             sizes="100vw" alt="" decoding="async">
+      {%- endif -%}
+    </picture>
+  {%- endif -%}
+
+  <div class="hero__scrim" aria-hidden="true"></div>
+
+  <div class="hero__inner">
+    <div class="hero__content">
+
+      {%- if section.settings.eyebrow != blank -%}
+        <p class="eyebrow hero__eyebrow">{{ section.settings.eyebrow }}</p>
+      {%- endif -%}
+
+      {%- comment -%}
+        Headline test. Both arms render; the framework hides the one this
+        visitor didn't get, before paint. Leaving Headline B blank collapses
+        this back to a single unmarked <h1> with no experiment overhead.
+      {%- endcomment -%}
+      {%- if settings.ab_enabled and section.settings.heading_b != blank -%}
+        <h1 class="hero__title" data-ab="hero_headline:a">{{ section.settings.heading }}</h1>
+        <h1 class="hero__title" data-ab="hero_headline:b">{{ section.settings.heading_b }}</h1>
+      {%- else -%}
+        <h1 class="hero__title">{{ section.settings.heading }}</h1>
+      {%- endif -%}
+
+      {%- if section.settings.subheading != blank -%}
+        <p class="hero__sub">{{ section.settings.subheading }}</p>
+      {%- endif -%}
+
+      {%- comment -%} Proof row — scannable in under a second. {%- endcomment -%}
+      <ul class="hero__proof">
+        {%- for block in section.blocks -%}
+          {%- if block.type == 'proof' -%}
+            <li {{ block.shopify_attributes }}>
+              <span class="hero__proof-value">{{ block.settings.value }}</span>
+              <span class="hero__proof-label">{{ block.settings.label }}</span>
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+
+      <div class="hero__cta">
+        {% render 'buy-button', location: 'hero', size: 'lg' %}
+
+        {%- if section.settings.secondary_label != blank -%}
+          <a class="btn btn--ghost hero__secondary"
+             href="{{ section.settings.secondary_link | default: '#the-vodka' }}"
+             data-track-cta="hero-secondary">
+            {{ section.settings.secondary_label }}
+          </a>
+        {%- endif -%}
+      </div>
+
+      {%- if settings.show_trust_bar -%}
+        <ul class="trustbar">
+          {%- for block in section.blocks -%}
+            {%- if block.type == 'trust' -%}
+              <li {{ block.shopify_attributes }}>{{ block.settings.text }}</li>
+            {%- endif -%}
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+    </div>
+
+    {%- comment -%}
+      Bottle shot. Falls back to the cut-out bundled with the theme so the hero
+      is never empty before someone uploads their own in the editor.
+    {%- endcomment -%}
+    <div class="hero__bottle">
+      {%- if bottle != blank -%}
+        <img src="{{ bottle | image_url: width: 840 }}"
+             srcset="{{ bottle | image_url: width: 420 }} 420w,
+                     {{ bottle | image_url: width: 840 }} 840w"
+             sizes="(max-width: 899px) 55vw, 32vw"
+             alt="{{ settings.product_name | escape }} bottle"
+             width="420" height="1200" fetchpriority="high" decoding="async">
+      {%- else -%}
+        <img src="{{ 'bottle.webp' | asset_url }}"
+             srcset="{{ 'bottle-600.webp' | asset_url }} 211w,
+                     {{ 'bottle.webp' | asset_url }} 421w"
+             sizes="(max-width: 899px) 55vw, 32vw"
+             alt="{{ settings.product_name | escape }} bottle"
+             width="421" height="1200" fetchpriority="high" decoding="async">
+      {%- endif -%}
+    </div>
+
+  </div>
+
+  <a class="hero__scroll" href="#the-vodka" aria-label="Scroll to product details"
+     data-track-cta="hero-scroll-cue">
+    <span></span>
+  </a>
+</section>
+
+{% schema %}
+{
+  "name": "Hero",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "Background image — desktop",
+      "info": "Upload 2560×1440 (16:9), JPEG or WebP, under 400KB. This is the LCP element, so file size directly affects load speed. The left ~46% and the bottom third are darkened by the scrim, and the bottle sits over the right ~32% — keep the visual interest in the centre and upper-right."
+    },
+    {
+      "type": "image_picker",
+      "id": "background_image_mobile",
+      "label": "Background image — mobile",
+      "info": "Optional. Upload a portrait crop, 1200×1600 (3:4), under 250KB. Used below 900px. Leave blank to centre-crop the desktop image instead."
+    },
+    {
+      "type": "image_picker",
+      "id": "bottle_image",
+      "label": "Bottle image (cut-out, transparent)",
+      "info": "Transparent PNG or WebP, ~1200px tall. Leave blank to use the bottle bundled with the theme."
+    },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Nordic winter wheat vodka" },
+    {
+      "type": "textarea", "id": "heading", "label": "Headline",
+      "default": "Nine distillations. One clean finish."
+    },
+    {
+      "type": "textarea", "id": "subheading", "label": "Subheading",
+      "default": "Winter wheat from the sixtieth parallel, distilled nine times, then filtered at nine degrees below zero through glacial basalt. Nothing added, nothing left behind."
+    },
+    { "type": "header", "content": "A/B variants" },
+    {
+      "type": "textarea", "id": "heading_b", "label": "Headline — variant B",
+      "info": "Leave blank for no headline test. Requires the `hero_headline` experiment to be enabled in Theme settings → A/B testing."
+    },
+    {
+      "type": "image_picker", "id": "background_image_b", "label": "Background — variant B (desktop)",
+      "info": "Leave blank for no image test. Uploading one activates the `hero_image` experiment arm B: this background replaces the default and the bottle cut-out is hidden. Same sizing as the main background."
+    },
+    {
+      "type": "image_picker", "id": "background_image_b_mobile", "label": "Background — variant B (mobile)",
+      "info": "Optional portrait crop for arm B below 900px. Falls back to the desktop variant-B image."
+    },
+    { "type": "header", "content": "Calls to action" },
+    { "type": "text", "id": "secondary_label", "label": "Secondary CTA label", "default": "Explore the vodka" },
+    { "type": "url", "id": "secondary_link", "label": "Secondary CTA link" }
+  ],
+  "blocks": [
+    {
+      "type": "proof",
+      "name": "Proof point",
+      "settings": [
+        { "type": "text", "id": "value", "label": "Value", "default": "9x" },
+        { "type": "text", "id": "label", "label": "Label", "default": "Distillations" }
+      ]
+    },
+    {
+      "type": "trust",
+      "name": "Trust item",
+      "settings": [
+        { "type": "text", "id": "text", "label": "Text", "default": "Ships in 2–4 business days" }
+      ]
+    }
+  ],
+  "default": {
+    "settings": {},
+    "blocks": [
+      { "type": "proof", "settings": { "value": "9x",     "label": "Distillations" } },
+      { "type": "proof", "settings": { "value": "−9°C",   "label": "Filtration" } },
+      { "type": "proof", "settings": { "value": "Nordic", "label": "Winter wheat" } },
+      { "type": "trust", "settings": { "text": "Ships in 2–4 business days" } },
+      { "type": "trust", "settings": { "text": "Adult signature required" } },
+      { "type": "trust", "settings": { "text": "Secure checkout" } }
+    ]
+  },
+  "presets": [{ "name": "Hero" }]
+}
+{% endschema %}

@@ -1,0 +1,109 @@
+{%- comment -%}
+  Social proof.
+
+  The live site's only credibility signal is the founder's name in the footer.
+  For a new spirits brand at premium price, third-party validation — medals,
+  press, reviews — is what closes the gap between interest and purchase.
+
+  Ships with empty placeholders on purpose. Do not populate with invented
+  awards, quotes or ratings: fabricated review content is both a legal and a
+  brand risk. Fill only with real, attributable proof.
+{%- endcomment -%}
+
+<section class="section section--proof" id="{{ section.settings.anchor | default: 'proof' }}"
+         data-section-name="social_proof">
+  <div class="wrap">
+    <header class="section__head section__head--center">
+      {%- if section.settings.eyebrow != blank -%}
+        <p class="eyebrow">{{ section.settings.eyebrow }}</p>
+      {%- endif -%}
+      {%- if section.settings.heading != blank -%}
+        <h2 class="h2">{{ section.settings.heading }}</h2>
+      {%- endif -%}
+    </header>
+
+    {%- assign quote_count = 0 -%}
+    {%- for block in section.blocks -%}
+      {%- if block.type == 'quote' and block.settings.quote != blank -%}
+        {%- assign quote_count = quote_count | plus: 1 -%}
+      {%- endif -%}
+    {%- endfor -%}
+
+    {%- if quote_count > 0 -%}
+      <div class="quotes">
+        {%- for block in section.blocks -%}
+          {%- if block.type == 'quote' and block.settings.quote != blank -%}
+            <figure class="quote" {{ block.shopify_attributes }}>
+              <blockquote>{{ block.settings.quote }}</blockquote>
+              <figcaption>
+                <span class="quote__source">{{ block.settings.source }}</span>
+                {%- if block.settings.detail != blank -%}
+                  <span class="quote__detail">{{ block.settings.detail }}</span>
+                {%- endif -%}
+              </figcaption>
+            </figure>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+
+    {%- assign logo_count = 0 -%}
+    {%- for block in section.blocks -%}
+      {%- if block.type == 'logo' and block.settings.image != blank -%}
+        {%- assign logo_count = logo_count | plus: 1 -%}
+      {%- endif -%}
+    {%- endfor -%}
+
+    {%- if logo_count > 0 -%}
+      <ul class="logos" aria-label="Press and awards">
+        {%- for block in section.blocks -%}
+          {%- if block.type == 'logo' and block.settings.image != blank -%}
+            <li {{ block.shopify_attributes }}>
+              <img src="{{ block.settings.image | image_url: width: 320 }}"
+                   alt="{{ block.settings.alt | escape }}"
+                   width="160" height="60" loading="lazy" decoding="async">
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+
+    {%- if quote_count == 0 and logo_count == 0 -%}
+      <p class="proof__empty">
+        Add real press quotes, competition medals or verified reviews in the
+        theme editor. This section stays hidden until you do.
+      </p>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Social proof",
+  "settings": [
+    { "type": "text", "id": "anchor", "label": "Anchor ID", "default": "proof" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Recognition" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "" }
+  ],
+  "blocks": [
+    {
+      "type": "quote",
+      "name": "Quote",
+      "settings": [
+        { "type": "textarea", "id": "quote", "label": "Quote", "info": "Use real, attributable quotes only." },
+        { "type": "text", "id": "source", "label": "Source" },
+        { "type": "text", "id": "detail", "label": "Detail" }
+      ]
+    },
+    {
+      "type": "logo",
+      "name": "Logo",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Logo" },
+        { "type": "text", "id": "alt", "label": "Alt text" }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Social proof" }]
+}
+{% endschema %}

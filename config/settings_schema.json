@@ -1,0 +1,611 @@
+[
+  {
+    "name": "theme_info",
+    "theme_name": "Nine Below — Conversion Theme",
+    "theme_version": "1.0.0",
+    "theme_author": "Fictional brand — test site",
+    "theme_documentation_url": "https://www.ninebelow.com",
+    "theme_support_url": "https://www.ninebelow.com/contact"
+  },
+  {
+    "name": "Brand colors",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Core palette"
+      },
+      {
+        "type": "paragraph",
+        "content": "Cold, clinical palette. Nine Below is a fictional brand built to exercise this theme."
+      },
+      {
+        "type": "color",
+        "id": "color_ink",
+        "label": "Ink (page background)",
+        "default": "#0d1418"
+      },
+      {
+        "type": "color",
+        "id": "color_ink_deep",
+        "label": "Deep ink (sections, footer)",
+        "default": "#080e11"
+      },
+      {
+        "type": "color",
+        "id": "color_cream",
+        "label": "Cream (primary text)",
+        "default": "#e8eef2"
+      },
+      {
+        "type": "color",
+        "id": "color_accent",
+        "label": "Accent (buttons, highlights)",
+        "default": "#1f8ab0"
+      },
+      {
+        "type": "color",
+        "id": "color_accent_hover",
+        "label": "Accent hover",
+        "default": "#2aa3cc"
+      },
+      {
+        "type": "color",
+        "id": "color_muted",
+        "label": "Muted text",
+        "default": "#8098a6"
+      },
+      {
+        "type": "color",
+        "id": "color_light",
+        "label": "Light surface",
+        "default": "#eef3f6"
+      },
+      {
+        "type": "color",
+        "id": "color_on_light",
+        "label": "Text on light surface",
+        "default": "#0d1418"
+      }
+    ]
+  },
+  {
+    "name": "Typography",
+    "settings": [
+      {
+        "type": "font_picker",
+        "id": "font_heading",
+        "label": "Display / headings",
+        "default": "work_sans_n7",
+        "info": "A grotesque at 700 suits the clinical, modern register. Change here to re-skin."
+      },
+      {
+        "type": "font_picker",
+        "id": "font_body",
+        "label": "Body",
+        "default": "work_sans_n4"
+      },
+      {
+        "type": "range",
+        "id": "heading_scale",
+        "label": "Heading scale",
+        "min": 90,
+        "max": 130,
+        "step": 5,
+        "unit": "%",
+        "default": 100
+      },
+      {
+        "type": "range",
+        "id": "body_scale",
+        "label": "Body scale",
+        "min": 90,
+        "max": 120,
+        "step": 5,
+        "unit": "%",
+        "default": 100
+      },
+      {
+        "type": "checkbox",
+        "id": "uppercase_headings",
+        "label": "Uppercase section eyebrows",
+        "default": true
+      }
+    ]
+  },
+  {
+    "name": "Commerce — BottleNexus",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Nine Below sells through BottleNexus, which owns the cart and checkout. This theme renders the BottleNexus buy button and bridges its interactions into GA4 so the funnel is finally measurable."
+      },
+      {
+        "type": "checkbox",
+        "id": "bn_enabled",
+        "label": "Enable BottleNexus buy button",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "bn_token",
+        "label": "BottleNexus token",
+        "default": "DEMO-BN-TOKEN-0000-0000-0000",
+        "info": "Placeholder. Paste the real buy-button token here when you go live."
+      },
+      {
+        "type": "text",
+        "id": "bn_product_id",
+        "label": "BottleNexus product ID",
+        "default": "0000",
+        "info": "Placeholder product ID."
+      },
+      {
+        "type": "checkbox",
+        "id": "bn_demo_mode",
+        "label": "Demo mode (simulate the buy flow)",
+        "default": true,
+        "info": "Renders a working mock cart and checkout handoff instead of calling BottleNexus, so the full funnel and its GA4 events can be exercised without real credentials. Turn off in production."
+      },
+      {
+        "type": "text",
+        "id": "bn_button_text",
+        "label": "Buy button label",
+        "default": "Order Now",
+        "info": "Test alternatives: 'Reserve a Bottle', 'Buy Winter Release'."
+      },
+      {
+        "type": "select",
+        "id": "bn_behavior",
+        "label": "Cart behavior",
+        "options": [
+          {
+            "value": "sidebar",
+            "label": "Sidebar"
+          },
+          {
+            "value": "modal",
+            "label": "Modal"
+          },
+          {
+            "value": "redirect",
+            "label": "Redirect"
+          }
+        ],
+        "default": "sidebar"
+      },
+      {
+        "type": "header",
+        "content": "Product facts"
+      },
+      {
+        "type": "text",
+        "id": "product_name",
+        "label": "Product name",
+        "default": "Nine Below — Winter Wheat Vodka"
+      },
+      {
+        "type": "text",
+        "id": "product_price",
+        "label": "Display price",
+        "default": "",
+        "info": "e.g. 89.00 — leave blank to hide price. Numeric only, no currency symbol."
+      },
+      {
+        "type": "text",
+        "id": "product_currency",
+        "label": "Currency code",
+        "default": "USD"
+      },
+      {
+        "type": "text",
+        "id": "product_size",
+        "label": "Bottle size",
+        "default": "750ml"
+      },
+      {
+        "type": "text",
+        "id": "product_abv",
+        "label": "ABV",
+        "default": "40% ABV"
+      },
+      {
+        "type": "text",
+        "id": "product_sku",
+        "label": "SKU",
+        "default": "NB-WW-750"
+      },
+      {
+        "type": "select",
+        "id": "product_availability",
+        "label": "Availability (for structured data)",
+        "options": [
+          {
+            "value": "InStock",
+            "label": "In stock"
+          },
+          {
+            "value": "PreOrder",
+            "label": "Pre-order"
+          },
+          {
+            "value": "OutOfStock",
+            "label": "Out of stock"
+          },
+          {
+            "value": "LimitedAvailability",
+            "label": "Limited availability"
+          }
+        ],
+        "default": "PreOrder"
+      }
+    ]
+  },
+  {
+    "name": "Age verification",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "The current gate asks for a full date of birth before anyone sees the product — three inputs standing between a visitor and the page. A single yes/no confirmation is materially less lossy and still satisfies standard trade-body guidance. Confirm your approach with counsel for your markets."
+      },
+      {
+        "type": "checkbox",
+        "id": "age_gate_enabled",
+        "label": "Enable age gate",
+        "default": true
+      },
+      {
+        "type": "range",
+        "id": "age_gate_remember_days",
+        "label": "Remember for",
+        "min": 1,
+        "max": 90,
+        "step": 1,
+        "unit": "d",
+        "default": 30,
+        "info": "The current site re-gates returning visitors far too often. 30 days cuts repeat friction."
+      },
+      {
+        "type": "text",
+        "id": "age_gate_heading",
+        "label": "Heading",
+        "default": "You must be at least 21 to purchase alcohol"
+      },
+      {
+        "type": "text",
+        "id": "age_gate_deny_text",
+        "label": "Denial message",
+        "default": "You're not old enough to view this content."
+      },
+      {
+        "type": "range",
+        "id": "age_gate_min_age",
+        "label": "Minimum age",
+        "min": 18,
+        "max": 25,
+        "step": 1,
+        "unit": "yr",
+        "default": 21,
+        "info": "Used by the birthdate arm. Kept as one number because this site is US-only; a per-country lookup would change what the test measures."
+      },
+      {
+        "type": "header",
+        "content": "Birthdate arm (A/B variant B)"
+      },
+      {
+        "type": "paragraph",
+        "content": "Shown only to visitors bucketed into variant 'b' of the age_gate experiment. Rebuilds the birthdate form that is the category default, so the friction can be measured against the one-tap gate."
+      },
+      {
+        "type": "text",
+        "id": "age_gate_dob_eyebrow",
+        "label": "Eyebrow",
+        "default": "Welcome"
+      },
+      {
+        "type": "text",
+        "id": "age_gate_dob_heading",
+        "label": "Heading",
+        "default": "Are you of legal drinking age?"
+      },
+      {
+        "type": "text",
+        "id": "age_gate_dob_cta",
+        "label": "Button label",
+        "default": "Confirm & Enter"
+      },
+      {
+        "type": "text",
+        "id": "age_gate_dob_invalid",
+        "label": "Invalid date message",
+        "default": "Please enter a valid birthdate."
+      }
+    ]
+  },
+  {
+    "name": "Analytics & tracking",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Google Analytics 4"
+      },
+      {
+        "type": "text",
+        "id": "ga4_measurement_id",
+        "label": "GA4 Measurement ID",
+        "default": "G-XXXXXXXXXX",
+        "info": "Placeholder. Paste your own G- ID here. While it stays as G-XXXXXXXXXX the theme runs in analytics demo mode: no network calls are made and every event is logged to the browser console so you can verify the funnel."
+      },
+      {
+        "type": "checkbox",
+        "id": "ga4_enabled",
+        "label": "Enable GA4",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "ga4_debug",
+        "label": "Debug mode",
+        "default": false,
+        "info": "Sends debug_mode so events appear in GA4 DebugView. Turn off in production."
+      },
+      {
+        "type": "checkbox",
+        "id": "consent_mode",
+        "label": "Enable Consent Mode v2",
+        "default": true,
+        "info": "Bridges Shopify's native cookie banner (Admin → Settings → Customer privacy) into GA4 consent state. This theme does not render its own banner."
+      },
+      {
+        "type": "select",
+        "id": "consent_default",
+        "label": "Consent Mode default",
+        "options": [
+          {
+            "value": "granted",
+            "label": "Granted — US-only store (opt-out regime)"
+          },
+          {
+            "value": "denied",
+            "label": "Denied — selling into EEA/UK (opt-in regime)"
+          }
+        ],
+        "default": "granted",
+        "info": "US state privacy laws are opt-out: measurement may run until a visitor opts out. EEA/UK require opt-in, so nothing may run before consent. Switch to Denied before selling into Europe. Shopify's banner updates this either way once a visitor chooses."
+      },
+      {
+        "type": "checkbox",
+        "id": "track_scroll_depth",
+        "label": "Track scroll depth (25/50/75/90%)",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "track_outbound",
+        "label": "Track outbound link clicks",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Additional tags"
+      },
+      {
+        "type": "text",
+        "id": "gtm_id",
+        "label": "Google Tag Manager ID",
+        "default": "",
+        "info": "Optional. GTM-XXXXXXX. Leave blank to load GA4 directly (faster)."
+      },
+      {
+        "type": "text",
+        "id": "meta_pixel_id",
+        "label": "Meta Pixel ID",
+        "default": ""
+      },
+      {
+        "type": "text",
+        "id": "tiktok_pixel_id",
+        "label": "TikTok Pixel ID",
+        "default": ""
+      },
+      {
+        "type": "text",
+        "id": "klaviyo_company_id",
+        "label": "Klaviyo company ID",
+        "default": "",
+        "info": "Leave blank to use the built-in demo signup handler."
+      }
+    ]
+  },
+  {
+    "name": "A/B testing",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Assignment runs before first paint, so visitors never see a flash of the wrong variant. Arms are sticky per visitor and every GA4 event carries them, so add_to_cart and begin_checkout split by arm with no extra tooling."
+      },
+      {
+        "type": "checkbox",
+        "id": "ab_enabled",
+        "label": "Enable A/B testing",
+        "default": true
+      },
+      {
+        "type": "textarea",
+        "id": "ab_experiments",
+        "label": "Experiments (JSON)",
+        "default": "{\"age_gate\":{\"enabled\":true,\"traffic\":100,\"variants\":{\"a\":50,\"b\":50}},\"hero_headline\":{\"enabled\":false,\"traffic\":100,\"variants\":{\"a\":50,\"b\":50}},\"hero_image\":{\"enabled\":false,\"traffic\":100,\"variants\":{\"a\":50,\"b\":50}},\"hero_layout\":{\"enabled\":false,\"traffic\":100,\"variants\":{\"a\":50,\"b\":50}}}",
+        "info": "One key per experiment. The FIRST variant listed is the control. `traffic` is the percentage of visitors admitted — the rest see the control and are excluded from reporting. Set `enabled: false` to park an experiment without deleting it. Invalid JSON disables all tests rather than breaking the page."
+      },
+      {
+        "type": "header",
+        "content": "QA"
+      },
+      {
+        "type": "paragraph",
+        "content": "Force an arm with ?ab=hero_headline:b (comma-separate for several). Clear with ?ab=reset. Forced arms persist, so you can walk a whole funnel in one variant. In the console: NBAB.all(), NBAB.force('id','b'), NBAB.reset()."
+      }
+    ]
+  },
+  {
+    "name": "Paid social flow",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "A stripped landing mode for ad traffic. Nav, footer links and secondary CTAs are removed so the only path is the buy button — every other link is an exit you already paid for. Compliance elements (age gate, responsibility statement, privacy and terms links) are never hidden."
+      },
+      {
+        "type": "checkbox",
+        "id": "flow_enabled",
+        "label": "Enable focused paid-social flow",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "flow_sources",
+        "label": "Trigger sources",
+        "default": "instagram,ig,tiktok,facebook,meta,fb",
+        "info": "Matched against utm_source, utm_medium, and the referring domain. Comma separated."
+      },
+      {
+        "type": "checkbox",
+        "id": "flow_hide_nav",
+        "label": "Hide header navigation",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "flow_hide_footer_nav",
+        "label": "Hide footer link columns",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "flow_hide_secondary_cta",
+        "label": "Hide secondary CTAs",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "flow_hide_announcement",
+        "label": "Hide announcement bar",
+        "default": false
+      },
+      {
+        "type": "header",
+        "content": "QA"
+      },
+      {
+        "type": "paragraph",
+        "content": "Force the stripped view with ?flow=focus, or force the full site with ?flow=full. The mode persists for the session."
+      }
+    ]
+  },
+  {
+    "name": "Conversion features",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "sticky_mobile_cta",
+        "label": "Sticky mobile buy bar",
+        "default": true,
+        "info": "Keeps the buy action reachable on phones. Typically one of the largest single mobile conversion gains."
+      },
+      {
+        "type": "checkbox",
+        "id": "sticky_header_cta",
+        "label": "Show buy button in sticky header",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "show_trust_bar",
+        "label": "Show trust bar under the buy button",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "reduce_motion_default",
+        "label": "Respect prefers-reduced-motion",
+        "default": true
+      }
+    ]
+  },
+  {
+    "name": "Compliance & footer",
+    "settings": [
+      {
+        "type": "text",
+        "id": "legal_note",
+        "label": "Purchase age note",
+        "default": "Must be 21 years of age or older to purchase"
+      },
+      {
+        "type": "textarea",
+        "id": "responsibility_note",
+        "label": "Responsibility statement",
+        "default": "PLEASE DO NOT SHARE WITH ANYONE UNDER THE LEGAL PURCHASE AGE FOR ALCOHOL. DRINK RESPONSIBLY. DON'T DRINK & DRIVE."
+      },
+      {
+        "type": "text",
+        "id": "copyright_name",
+        "label": "Copyright holder",
+        "default": "Nine Below"
+      },
+      {
+        "type": "header",
+        "content": "Social"
+      },
+      {
+        "type": "text",
+        "id": "social_instagram",
+        "label": "Instagram URL",
+        "default": "",
+        "info": "Leave blank to hide the Connect column entirely."
+      },
+      {
+        "type": "text",
+        "id": "social_tiktok",
+        "label": "TikTok URL",
+        "default": ""
+      },
+      {
+        "type": "text",
+        "id": "social_facebook",
+        "label": "Facebook URL",
+        "default": ""
+      }
+    ]
+  },
+  {
+    "name": "SEO & sharing",
+    "settings": [
+      {
+        "type": "text",
+        "id": "meta_title",
+        "label": "Default title",
+        "default": "Nine Below | Nordic Winter Wheat Vodka"
+      },
+      {
+        "type": "textarea",
+        "id": "meta_description",
+        "label": "Default description",
+        "default": "Nine Below — Nordic winter wheat vodka, distilled nine times and filtered at nine degrees below zero through glacial basalt."
+      },
+      {
+        "type": "image_picker",
+        "id": "share_image",
+        "label": "Social share image"
+      },
+      {
+        "type": "image_picker",
+        "id": "logo",
+        "label": "Logo"
+      },
+      {
+        "type": "image_picker",
+        "id": "favicon",
+        "label": "Favicon"
+      }
+    ]
+  }
+]

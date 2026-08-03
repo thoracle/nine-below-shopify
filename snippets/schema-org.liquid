@@ -1,0 +1,76 @@
+{%- comment -%}
+  Structured data. The current site ships none, so it is invisible to product
+  rich results, brand knowledge panels and sitelinks. Product + Brand +
+  Organization + FAQ markup here is cheap and compounds on organic traffic.
+{%- endcomment -%}
+
+{%- liquid
+  assign brand_name = 'Nine Below Vodka'
+  assign share_img = ''
+  if settings.share_image != blank
+    assign share_img = settings.share_image | image_url: width: 1200
+  endif
+  assign logo_img = ''
+  if settings.logo != blank
+    assign logo_img = settings.logo | image_url: width: 600
+  endif
+-%}
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "{{ shop.url }}/#organization",
+      "name": {{ brand_name | json }},
+      "url": "{{ shop.url }}",
+      {%- if logo_img != blank %}"logo": {{ logo_img | json }},{% endif %}
+      "sameAs": [
+        {%- assign socials = '' -%}
+        {%- if settings.social_instagram != blank %}{{ settings.social_instagram | json }}{% assign socials = 'y' %}{% endif -%}
+        {%- if settings.social_tiktok != blank %}{% if socials == 'y' %},{% endif %}{{ settings.social_tiktok | json }}{% assign socials = 'y' %}{% endif -%}
+        {%- if settings.social_facebook != blank %}{% if socials == 'y' %},{% endif %}{{ settings.social_facebook | json }}{% endif -%}
+      ]
+    },
+    {
+      "@type": "Brand",
+      "@id": "{{ shop.url }}/#brand",
+      "name": {{ brand_name | json }}
+    },
+    {
+      "@type": "WebSite",
+      "@id": "{{ shop.url }}/#website",
+      "url": "{{ shop.url }}",
+      "name": {{ brand_name | json }},
+      "publisher": { "@id": "{{ shop.url }}/#organization" }
+    },
+    {
+      "@type": "Product",
+      "@id": "{{ shop.url }}/#product",
+      "name": {{ settings.product_name | json }},
+      "description": {{ settings.meta_description | json }},
+      {%- if share_img != blank %}"image": {{ share_img | json }},{% endif %}
+      "sku": {{ settings.product_sku | json }},
+      "brand": { "@id": "{{ shop.url }}/#brand" },
+      "category": "Vodka",
+      "additionalProperty": [
+        { "@type": "PropertyValue", "name": "Grain", "value": "Nordic winter wheat" },
+        { "@type": "PropertyValue", "name": "Process", "value": "Nine distillations, filtered at −9°C" },
+        { "@type": "PropertyValue", "name": "ABV", "value": {{ settings.product_abv | json }} },
+        { "@type": "PropertyValue", "name": "Volume", "value": {{ settings.product_size | json }} }
+      ]
+      {%- if settings.product_price != blank -%}
+      ,"offers": {
+        "@type": "Offer",
+        "url": "{{ shop.url }}",
+        "priceCurrency": {{ settings.product_currency | json }},
+        "price": {{ settings.product_price | json }},
+        "availability": "https://schema.org/{{ settings.product_availability }}",
+        "seller": { "@id": "{{ shop.url }}/#organization" }
+      }
+      {%- endif -%}
+    }
+  ]
+}
+</script>

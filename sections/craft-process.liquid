@@ -1,0 +1,126 @@
+{%- comment -%}
+  The distillation and filtration process, as a timeline.
+
+  Nine distillations and sub-zero filtration are the brand's only concrete
+  quality claims. Given room, they justify the price — which is what makes the
+  buy button work.
+{%- endcomment -%}
+
+<section class="section section--craft" id="{{ section.settings.anchor | default: 'craft' }}"
+         data-section-name="craft_process">
+  <div class="wrap">
+    <header class="section__head section__head--center">
+      <p class="eyebrow">{{ section.settings.eyebrow }}</p>
+      <h2 class="h2">{{ section.settings.heading }}</h2>
+      {%- if section.settings.intro != blank -%}
+        <p class="lead">{{ section.settings.intro }}</p>
+      {%- endif -%}
+    </header>
+
+    <figure class="craft__media">
+      {%- if section.settings.image != blank -%}
+        <img src="{{ section.settings.image | image_url: width: 1600 }}"
+             srcset="{{ section.settings.image | image_url: width: 900 }} 900w,
+                     {{ section.settings.image | image_url: width: 1600 }} 1600w"
+             sizes="(min-width: 1280px) 1280px, 100vw"
+             alt="{{ section.settings.image_alt | escape }}"
+             width="1600" height="1200" loading="lazy" decoding="async">
+      {%- else -%}
+        <img src="{{ 'craft.webp' | asset_url }}"
+             srcset="{{ 'craft-900.webp' | asset_url }} 900w, {{ 'craft.webp' | asset_url }} 1344w"
+             sizes="(min-width: 1280px) 1280px, 100vw"
+             alt="{{ section.settings.image_alt | escape }}"
+             width="1344" height="768" loading="lazy" decoding="async">
+      {%- endif -%}
+      {%- if section.settings.caption != blank -%}
+        <figcaption>{{ section.settings.caption }}</figcaption>
+      {%- endif -%}
+    </figure>
+
+    <ol class="timeline">
+      {%- for block in section.blocks -%}
+        <li class="timeline__item" {{ block.shopify_attributes }}>
+          <div class="timeline__marker" aria-hidden="true"></div>
+          <div class="timeline__content">
+            <p class="timeline__span">{{ block.settings.span }}</p>
+            <h3 class="timeline__title">{{ block.settings.title }}</h3>
+            <p class="timeline__body">{{ block.settings.body }}</p>
+          </div>
+        </li>
+      {%- endfor -%}
+    </ol>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Craft process",
+  "settings": [
+    { "type": "text", "id": "anchor", "label": "Anchor ID", "default": "craft" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "The craft" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Nine passes, one temperature" },
+    {
+      "type": "image_picker", "id": "image", "label": "Craft image",
+      "info": "Optional wide band above the timeline. Upload 1600x1200 or larger — CSS crops it to 2:1 on desktop, 4:3 on mobile."
+    },
+    {
+      "type": "text", "id": "image_alt", "label": "Craft image alt text",
+      "default": "Nine Below winter wheat vodka"
+    },
+    { "type": "text", "id": "caption", "label": "Caption", "default": "" },
+    {
+      "type": "textarea", "id": "intro", "label": "Intro",
+      "default": "Every step here removes something. None of them add."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "step",
+      "name": "Step",
+      "settings": [
+        { "type": "text", "id": "span", "label": "Time span", "default": "Autumn" },
+        { "type": "text", "id": "title", "label": "Title", "default": "Distillation" },
+        { "type": "textarea", "id": "body", "label": "Body" }
+      ]
+    }
+  ],
+  "default": {
+    "settings": {},
+    "blocks": [
+      {
+        "type": "step",
+        "settings": {
+          "span": "Autumn",
+          "title": "Nordic distillation",
+          "body": "Distilled in the Nordic, then laid down without colouring or added sugar."
+        }
+      },
+      {
+        "type": "step",
+        "settings": {
+          "span": "Winter",
+          "title": "Mash and ferment",
+          "body": "A slow, cool ferment over five days. Speed makes esters; patience makes a neutral, clean wash."
+        }
+      },
+      {
+        "type": "step",
+        "settings": {
+          "span": "The ninth pass",
+          "title": "Nine distillations",
+          "body": "Nine passes through the column. Each one narrows the cut and takes a little more away — the last is almost entirely discarded."
+        }
+      },
+      {
+        "type": "step",
+        "settings": {
+          "span": "Bottling",
+          "title": "Sub-zero filtration",
+          "body": "Chilled to −9°C and passed through glacial basalt, then bottled without dilution beyond proofing water."
+        }
+      }
+    ]
+  },
+  "presets": [{ "name": "Craft process" }]
+}
+{% endschema %}

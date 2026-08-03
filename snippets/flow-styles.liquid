@@ -1,0 +1,48 @@
+{%- comment -%}
+  Focus-mode styling, driven by `data-flow="focus"` on <html>.
+
+  These are rendered from theme settings rather than hardcoded so the strip can
+  be tuned without editing CSS — and so each removal is a decision someone made,
+  not a default nobody reviewed.
+
+  Deliberately NOT hidden in focus mode:
+    · the age gate
+    · the responsibility statement and the 21+ purchase note
+    · privacy policy and terms links in the footer legal row
+  Those are compliance obligations. Removing them would lift conversion and be
+  the wrong trade.
+{%- endcomment -%}
+
+{%- if settings.flow_enabled -%}
+{% style %}
+  {%- if settings.flow_hide_nav -%}
+  /* Header keeps its logo and buy button; the links and burger go. */
+  :root[data-flow="focus"] .header__nav,
+  :root[data-flow="focus"] .header__toggle,
+  :root[data-flow="focus"] .header__mobile { display: none !important; }
+  :root[data-flow="focus"] .header__logo { pointer-events: none; }
+  {%- endif -%}
+
+  {%- if settings.flow_hide_footer_nav -%}
+  /* Footer keeps brand + legal; the link columns go. */
+  :root[data-flow="focus"] .footer__cols { display: none !important; }
+  :root[data-flow="focus"] .footer__top {
+    grid-template-columns: 1fr !important;
+    padding-bottom: 1.5rem;
+  }
+  {%- endif -%}
+
+  {%- if settings.flow_hide_secondary_cta -%}
+  :root[data-flow="focus"] .hero__secondary,
+  :root[data-flow="focus"] .hero__scroll { display: none !important; }
+  {%- endif -%}
+
+  {%- if settings.flow_hide_announcement -%}
+  :root[data-flow="focus"] .announce { display: none !important; }
+  {%- endif -%}
+
+  /* Outbound social links are the single biggest leak on an ad landing —
+     the visitor came FROM social, sending them back is a guaranteed loss. */
+  :root[data-flow="focus"] .footer__social { display: none !important; }
+{% endstyle %}
+{%- endif -%}

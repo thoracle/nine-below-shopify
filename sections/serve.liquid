@@ -1,0 +1,149 @@
+{%- comment -%}
+  Serves and cocktails.
+
+  Two jobs: it answers "what would I actually do with this bottle", which is a
+  real purchase objection on aged spirits, and it is the section most likely to
+  earn organic search traffic and social saves. Recipe schema is emitted so the
+  serves are eligible for recipe rich results.
+{%- endcomment -%}
+
+<section class="section section--serve" id="{{ section.settings.anchor | default: 'serve' }}"
+         data-section-name="serve">
+  <div class="wrap">
+    <header class="section__head">
+      <p class="eyebrow">{{ section.settings.eyebrow }}</p>
+      <h2 class="h2">{{ section.settings.heading }}</h2>
+      {%- if section.settings.intro != blank -%}
+        <p class="lead">{{ section.settings.intro }}</p>
+      {%- endif -%}
+    </header>
+
+    <div class="serves">
+      {%- for block in section.blocks -%}
+        <article class="serve" {{ block.shopify_attributes }}>
+          {%- if block.settings.image != blank -%}
+            <div class="serve__media">
+              <img src="{{ block.settings.image | image_url: width: 700 }}"
+                   srcset="{{ block.settings.image | image_url: width: 350 }} 350w,
+                           {{ block.settings.image | image_url: width: 700 }} 700w"
+                   sizes="(max-width: 749px) 88vw, 30vw"
+                   alt="{{ block.settings.title | escape }}"
+                   width="700" height="875" loading="lazy" decoding="async">
+            </div>
+          {%- else -%}
+            {%- assign fallback = 'serve-' | append: forloop.index | append: '.webp' -%}
+            <div class="serve__media">
+              <img src="{{ fallback | asset_url }}"
+                   sizes="(max-width: 749px) 88vw, 30vw"
+                   alt="{{ block.settings.title | escape }}"
+                   width="700" height="1023" loading="lazy" decoding="async">
+            </div>
+          {%- endif -%}
+
+          <div class="serve__body">
+            <h3 class="serve__title">{{ block.settings.title }}</h3>
+            {%- if block.settings.method != blank -%}
+              <p class="serve__method">{{ block.settings.method }}</p>
+            {%- endif -%}
+            {%- if block.settings.ingredients != blank -%}
+              <ul class="serve__ingredients">
+                {%- assign items = block.settings.ingredients | newline_to_br | split: '<br />' -%}
+                {%- for item in items -%}
+                  {%- assign clean = item | strip -%}
+                  {%- if clean != blank -%}<li>{{ clean }}</li>{%- endif -%}
+                {%- endfor -%}
+              </ul>
+            {%- endif -%}
+          </div>
+        </article>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{%- comment -%} Recipe structured data for each serve. {%- endcomment -%}
+{%- for block in section.blocks -%}
+  {%- if block.settings.title != blank and block.settings.ingredients != blank -%}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Recipe",
+      "name": {{ block.settings.title | json }},
+      "recipeCategory": "Cocktail",
+      "recipeCuisine": "Nordic",
+      "recipeIngredient": [
+        {%- assign items = block.settings.ingredients | newline_to_br | split: '<br />' -%}
+        {%- assign first = true -%}
+        {%- for item in items -%}
+          {%- assign clean = item | strip -%}
+          {%- if clean != blank -%}
+            {%- unless first %},{% endunless -%}{{ clean | json }}{%- assign first = false -%}
+          {%- endif -%}
+        {%- endfor -%}
+      ]
+      {%- if block.settings.method != blank -%}
+      ,"recipeInstructions": [
+        { "@type": "HowToStep", "text": {{ block.settings.method | json }} }
+      ]
+      {%- endif -%}
+    }
+    </script>
+  {%- endif -%}
+{%- endfor -%}
+
+{% schema %}
+{
+  "name": "Serve",
+  "settings": [
+    { "type": "text", "id": "anchor", "label": "Anchor ID", "default": "serve" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Serve" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Three ways to serve it" },
+    {
+      "type": "textarea", "id": "intro", "label": "Intro",
+      "default": "Clean enough to drink cold and plain, structured enough to hold a stirred drink."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "serve",
+      "name": "Serve",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Image" },
+        { "type": "text", "id": "title", "label": "Title", "default": "From the freezer" },
+        { "type": "textarea", "id": "method", "label": "Method" },
+        { "type": "textarea", "id": "ingredients", "label": "Ingredients (one per line)" }
+      ]
+    }
+  ],
+  "default": {
+    "settings": {},
+    "blocks": [
+      {
+        "type": "serve",
+        "settings": {
+          "title": "From the freezer",
+          "method": "Keep the bottle in the freezer. Pour into a chilled glass and drink within a few minutes, before it warms.",
+          "ingredients": "60ml Nine Below Winter Wheat"
+        }
+      },
+      {
+        "type": "serve",
+        "settings": {
+          "title": "Dry Martini",
+          "method": "Stir hard over ice for thirty seconds, strain into a frozen coupe, twist a wide lemon peel over the top.",
+          "ingredients": "60ml Nine Below Winter Wheat\n10ml dry vermouth\nLemon peel\nOlive, if you must"
+        }
+      },
+      {
+        "type": "serve",
+        "settings": {
+          "title": "Soda and lime",
+          "method": "Build over plenty of ice in a tall glass. Add the lime last so the oils sit on top.",
+          "ingredients": "50ml Nine Below Winter Wheat\n120ml chilled soda water\nFresh lime wedge"
+        }
+      }
+    ]
+  },
+  "presets": [{ "name": "Serve" }]
+}
+{% endschema %}

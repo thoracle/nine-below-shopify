@@ -1,0 +1,132 @@
+{%- comment -%}
+  Age gate — the part that cannot be allowed to fail.
+
+  The old arrangement was backwards: the gate shipped with `hidden` and a
+  deferred script revealed it. The whole site painted first and the gate arrived
+  afterwards, and if that script never ran — JS off, a throw anywhere earlier in
+  theme.js, a blocked asset — the site simply stayed open. An age gate that
+  fails open is not an age gate.
+
+  So the polarity is inverted. Everything here is inline and blocking, above
+  <body>, and it establishes the CLOSED state:
+
+    * `gate-armed` sits on <html> from the server whenever the gate is enabled.
+    * The stylesheet below hides every child of <body> except the gate, and
+      locks scrolling. No JS is involved in the blocking.
+    * This script's only job is to OPEN the gate — stamping `data-age="ok"`
+      when it finds a stored pass, before first paint, so a returning visitor
+      never sees a flash of the panel.
+
+  Every failure mode now lands on "gate stays up":
+    JS disabled            -> no stamp, gate stays up, content stays hidden
+    this script throws     -> no stamp, same
+    age-gate.js never runs -> same
+    theme.js throws        -> irrelevant; the gate no longer lives there
+
+  The cost is that a visitor with JS disabled cannot get in at all. That is the
+  correct side to fail on, and it is unavoidable here: passing the gate means
+  persisting a decision, and a Shopify theme cannot set a cookie server-side.
+
+  `gate-armed` and the gate element are both emitted from
+  `settings.age_gate_enabled`, so the class can never be present without the
+  element — which is why there is no `:has()` guard for that case. There
+  deliberately isn't one: `:has()` is unsupported in older browsers, where an
+  invalid selector would drop the rule and take the blocking with it.
+{%- endcomment -%}
+
+{%- if settings.age_gate_enabled -%}
+  <style>
+    /* Blocking, inline, above <body>: nothing can paint before this applies. */
+    html.gate-armed:not([data-age="ok"]) body > *:not(#age-gate) { display: none !important; }
+    html.gate-armed:not([data-age="ok"]) body { overflow: hidden !important; }
+
+    /* Once passed, the panel goes. `is-leaving` holds it on screen for the
+       fade — the content is revealed first and the gate dissolves over it,
+       rather than the gate fading to expose a blank page. */
+    html[data-age="ok"] #age-gate { display: none !important; }
+    html[data-age="ok"] #age-gate.is-leaving { display: grid !important; }
+  </style>
+
+  <script>
+  (function () {
+    'use strict';
+    var KEY = 'nb_age_ok';
+    var COOKIE = 'nb_age_ok';
+
+    function fromLocal() {
+      try {
+        var raw = localStorage.getItem(KEY);
+        if (!raw) return false;
+        var v = JSON.parse(raw);
+        if (v && v.exp && Date.now() > v.exp) { localStorage.removeItem(KEY); return false; }
+        return !!(v && v.v);
+      } catch (e) { return false; }
+    }
+
+    /* Safari in private mode throws on localStorage, and some privacy settings
+       clear it between loads. A mirrored cookie means those visitors are asked
+       once rather than on every single page. */
+    function fromCookie() {
+      try { return document.cookie.indexOf(COOKIE + '=1') !== -1; }
+      catch (e) { return false; }
+    }
+
+    /* QA escape hatch. Forcing an arm with `?ab=age_gate:b` shows nothing once
+       you have confirmed once, and there was otherwise no way to get the panel
+       back short of clearing site data by hand. Handled here rather than in
+       age-gate.js because the decision is made before first paint. */
+    function forced() {
+      try { return location.search.indexOf('agegate=reset') !== -1; }
+      catch (e) { return false; }
+    }
+
+    var alreadyIn = !forced() && (fromLocal() || fromCookie());
+
+    if (forced()) {
+      try { localStorage.removeItem(KEY); } catch (e) {}
+      try { document.cookie = COOKIE + '=;path=/;max-age=0;SameSite=Lax'; } catch (e) {}
+    }
+
+    if (alreadyIn) document.documentElement.setAttribute('data-age', 'ok');
+
+    /* The subscription API is published HERE, not in age-gate.js, so that any
+       script can ask "has this visitor actually seen the page yet?" without
+       caring about load order. analytics.js and ab.js both need it and both
+       run earlier; if age-gate.js owned it they would have to guess.
+
+       This matters for measurement, not just tidiness. `experiment_impression`
+       is the denominator of every conversion rate, and firing it while the gate
+       still covers the page counts people who never saw the thing being
+       tested. Same for `view_item` and the engagement timers. */
+    var passed = false;
+    var queue = [];
+
+    window.NB_AGE_GATE = {
+      get passed() { return passed; },
+
+      /** Run fn once the visitor is through the gate — immediately if they
+          already are, or if there is no gate on this page. */
+      onPass: function (fn) {
+        if (typeof fn !== 'function') return;
+        if (passed) fn(); else queue.push(fn);
+      },
+
+      /** Called by age-gate.js. Idempotent; one bad subscriber cannot stop
+          the rest or leave the page half-initialised. */
+      _resolve: function () {
+        if (passed) return;
+        passed = true;
+        var q = queue; queue = [];
+        q.forEach(function (fn) {
+          try { fn(); }
+          catch (e) { if (window.console) console.error('[age gate] subscriber failed', e); }
+        });
+        try { window.dispatchEvent(new CustomEvent('ninebelow:gatepassed')); } catch (e) {}
+      }
+    };
+
+    // A returning visitor is already through, so nothing should be deferred.
+    if (alreadyIn) window.NB_AGE_GATE._resolve();
+  })();
+  </script>
+{%- endif -%}

@@ -1,0 +1,99 @@
+{%- comment -%}
+  Consent bridge — Shopify Customer Privacy → GA4 Consent Mode v2.
+
+  There is deliberately NO banner markup here. Shopify's native cookie banner is
+  configured in Admin → Settings → Customer privacy; it renders itself, already
+  knows the visitor's region, and honours Global Privacy Control. Shipping a
+  second custom banner alongside it means two prompts and two sources of truth.
+
+  This file's only job is to translate Shopify's consent signal into gtag
+  consent state, and to expose a hook the footer link can call to reopen the
+  preferences dialog.
+
+  US-only stores: leave the blocking banner OFF in Admin and switch on the
+  "Your privacy choices" opt-out link instead. US state privacy laws (CPRA,
+  VA/CO/CT and the rest) are opt-out regimes — they require a privacy policy,
+  an opt-out mechanism, and respect for GPC, not an up-front permission prompt.
+{%- endcomment -%}
+
+{%- if settings.consent_mode -%}
+<script>
+  (function () {
+    'use strict';
+
+    /* Map Shopify's four categories onto Consent Mode v2 signals. */
+    function apply(consent, source) {
+      if (typeof gtag !== 'function') return;
+
+      var analytics = !!consent.analytics;
+      var marketing = !!consent.marketing;
+      var prefs     = !!consent.preferences;
+
+      gtag('consent', 'update', {
+        analytics_storage:       analytics ? 'granted' : 'denied',
+        ad_storage:              marketing ? 'granted' : 'denied',
+        ad_user_data:            marketing ? 'granted' : 'denied',
+        ad_personalization:      marketing ? 'granted' : 'denied',
+        personalization_storage: prefs     ? 'granted' : 'denied'
+      });
+      gtag('set', 'ads_data_redaction', !marketing);
+
+      gtag('event', 'consent_update', {
+        analytics: analytics,
+        marketing: marketing,
+        personalization: prefs,
+        source: source
+      });
+    }
+
+    /* Shopify fires this whenever the visitor makes or changes a choice. */
+    document.addEventListener('visitorConsentCollected', function (e) {
+      var d = (e && e.detail) || {};
+      apply({
+        analytics: d.analyticsAllowed,
+        marketing: d.marketingAllowed,
+        preferences: d.preferencesAllowed
+      }, 'shopify_banner');
+    });
+
+    /* On load, sync whatever Shopify already has stored for this visitor. */
+    function sync() {
+      var cp = window.Shopify && window.Shopify.customerPrivacy;
+      if (!cp || typeof cp.currentVisitorConsent !== 'function') return;
+      var c = cp.currentVisitorConsent() || {};
+      // Shopify returns "yes" / "no" / "" (undecided) as strings.
+      apply({
+        analytics: c.analytics === 'yes',
+        marketing: c.marketing === 'yes',
+        preferences: c.preferences === 'yes'
+      }, 'stored');
+    }
+
+    if (window.Shopify && typeof window.Shopify.loadFeatures === 'function') {
+      window.Shopify.loadFeatures(
+        [{ name: 'consent-tracking-api', version: '0.1' }],
+        function (err) { if (!err) sync(); }
+      );
+    } else {
+      document.addEventListener('DOMContentLoaded', sync);
+    }
+
+    /* Footer "Your privacy choices" link calls this. Shopify exposes the
+       dialog under two globals depending on store vintage — try both. */
+    window.NBPrivacy = {
+      showPreferences: function () {
+        if (window.privacyBanner && typeof window.privacyBanner.showPreferences === 'function') {
+          window.privacyBanner.showPreferences();
+          return true;
+        }
+        var cp = window.Shopify && window.Shopify.customerPrivacy;
+        if (cp && typeof cp.showPreferences === 'function') {
+          cp.showPreferences();
+          return true;
+        }
+        return false;
+      }
+    };
+  })();
+</script>
+{%- endif -%}

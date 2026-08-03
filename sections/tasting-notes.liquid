@@ -1,0 +1,106 @@
+{%- comment -%}
+  Tasting notes — nose / palate / finish.
+
+  For a spirit at this price point this is the single most requested piece of
+  information and it is entirely absent from the current site. It also converts
+  well as an objection-remover: it tells a buyer what they are actually getting
+  before they commit.
+
+  Copy here is written to be plausible against the stated process.
+  Replace with the distiller's real notes before launch.
+{%- endcomment -%}
+
+<section class="section section--tasting" id="{{ section.settings.anchor | default: 'tasting' }}"
+         data-section-name="tasting_notes">
+  <div class="wrap">
+    <header class="section__head">
+      <p class="eyebrow">{{ section.settings.eyebrow }}</p>
+      <h2 class="h2">{{ section.settings.heading }}</h2>
+      {%- if section.settings.intro != blank -%}
+        <p class="lead">{{ section.settings.intro }}</p>
+      {%- endif -%}
+    </header>
+
+    <div class="notes">
+      {%- for block in section.blocks -%}
+        <article class="notes__card" {{ block.shopify_attributes }}>
+          <p class="notes__step">{{ forloop.index | prepend: '0' | slice: -2, 2 }}</p>
+          <h3 class="notes__title">{{ block.settings.title }}</h3>
+          <p class="notes__body">{{ block.settings.body }}</p>
+          {%- if block.settings.descriptors != blank -%}
+            <ul class="notes__tags">
+              {%- assign tags = block.settings.descriptors | split: ',' -%}
+              {%- for tag in tags -%}
+                <li>{{ tag | strip }}</li>
+              {%- endfor -%}
+            </ul>
+          {%- endif -%}
+        </article>
+      {%- endfor -%}
+    </div>
+
+    {%- if section.settings.disclaimer != blank -%}
+      <p class="notes__disclaimer">{{ section.settings.disclaimer }}</p>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Tasting notes",
+  "settings": [
+    { "type": "text", "id": "anchor", "label": "Anchor ID", "default": "tasting" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Tasting" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "How it drinks" },
+    {
+      "type": "textarea", "id": "intro", "label": "Intro",
+      "default": "Best judged cold but not frozen solid — about −5°C, in a small stemmed glass."
+    },
+    {
+      "type": "text", "id": "disclaimer", "label": "Disclaimer",
+      "default": "Placeholder notes — replace with the distiller's official tasting panel before launch."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "note",
+      "name": "Note",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title", "default": "Nose" },
+        { "type": "textarea", "id": "body", "label": "Body" },
+        { "type": "text", "id": "descriptors", "label": "Descriptors (comma separated)" }
+      ]
+    }
+  ],
+  "default": {
+    "settings": {},
+    "blocks": [
+      {
+        "type": "note",
+        "settings": {
+          "title": "Nose",
+          "body": "Almost silent at first. Cold grain, a trace of white pepper, then a faint sweetness like wet stone.",
+          "descriptors": "Cold grain, White pepper, Wet stone, Cream"
+        }
+      },
+      {
+        "type": "note",
+        "settings": {
+          "title": "Palate",
+          "body": "Full and rounded rather than sharp. The wheat gives a soft cereal weight that carries the alcohol instead of hiding behind it.",
+          "descriptors": "Soft cereal, Vanilla, Sea salt, Anise"
+        }
+      },
+      {
+        "type": "note",
+        "settings": {
+          "title": "Filtration",
+          "body": "Short and clean by design. No burn, no lingering sweetness — the glass should read empty.",
+          "descriptors": "Clean, Brief, Mineral"
+        }
+      }
+    ]
+  },
+  "presets": [{ "name": "Tasting notes" }]
+}
+{% endschema %}

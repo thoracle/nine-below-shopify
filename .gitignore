@@ -1,0 +1,20 @@
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Node — only present if you install the GA4 pull dependency
+node_modules/
+package-lock.json
+
+# Credentials for tools/ga4-pull.mjs. Never commit a service-account key.
+*service-account*.json
+*credentials*.json
+gcp-*.json
+.env
+.env.*
+
+# Local GA4 pulls
+*.pull.json

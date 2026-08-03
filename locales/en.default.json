@@ -1,0 +1,13 @@
+{
+  "general": {
+    "meta": { "tags": "Tagged \"{{ tags }}\"", "page": "Page {{ page }}" },
+    "404": { "title": "Page not found", "subtext": "The page you were looking for does not exist." },
+    "accessibility": { "skip_to_content": "Skip to content", "close": "Close", "menu": "Menu" }
+  },
+  "sections": {
+    "header": { "menu": "Menu", "cart": "Cart" },
+    "age_gate": { "confirm": "Confirm & Enter", "yes": "Yes", "no": "No" },
+    "cart": { "title": "Cart", "subtotal": "Subtotal", "checkout": "Checkout", "empty": "No products added" }
+  },
+  "onboarding": { "product_title": "Example product title" }
+}

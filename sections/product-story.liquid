@@ -1,0 +1,100 @@
+{%- comment -%}
+  "The Vodka" — the product block the live site is missing entirely.
+
+  Today the entire product description is one 34-word sentence. There is no
+  spec table, no provenance, no reason to believe. This section gives the
+  considered buyer something to evaluate and gives search engines something to
+  index.
+{%- endcomment -%}
+
+<section class="section section--vodka" id="{{ section.settings.anchor | default: 'the-vodka' }}"
+         data-section-name="product_story">
+  <div class="wrap wrap--split">
+
+    <div class="rum__media">
+      {%- if section.settings.image != blank -%}
+        <img src="{{ section.settings.image | image_url: width: 900 }}"
+             srcset="{{ section.settings.image | image_url: width: 450 }} 450w,
+                     {{ section.settings.image | image_url: width: 900 }} 900w"
+             sizes="(max-width: 899px) 90vw, 44vw"
+             alt="{{ section.settings.image_alt | default: settings.product_name | escape }}"
+             width="900" height="1125" loading="lazy" decoding="async">
+      {%- else -%}
+        {%- comment -%}
+          Falls back to the bottle bundled with the theme so the section is
+          never empty. Upload product or process photography to replace it.
+        {%- endcomment -%}
+        <div class="rum__detail">
+          <img src="{{ 'detail.webp' | asset_url }}"
+               srcset="{{ 'detail-600.webp' | asset_url }} 600w,
+                       {{ 'detail.webp' | asset_url }} 1024w"
+               sizes="(max-width: 899px) 90vw, 44vw"
+               alt="{{ settings.product_name | escape }} — bottle detail"
+               width="1024" height="1024" loading="lazy" decoding="async">
+        </div>
+      {%- endif -%}
+    </div>
+
+    <div class="rum__body">
+      <p class="eyebrow">{{ section.settings.eyebrow }}</p>
+      <h2 class="h2">{{ section.settings.heading }}</h2>
+
+      <div class="rte">{{ section.settings.body }}</div>
+
+      {%- comment -%} Spec table: the detail a considered buyer looks for. {%- endcomment -%}
+      <dl class="specs">
+        {%- for block in section.blocks -%}
+          {%- if block.type == 'spec' -%}
+            <div class="specs__row" {{ block.shopify_attributes }}>
+              <dt>{{ block.settings.label }}</dt>
+              <dd>{{ block.settings.value }}</dd>
+            </div>
+          {%- endif -%}
+        {%- endfor -%}
+      </dl>
+
+      <div class="rum__cta">
+        {% render 'buy-button', location: 'product-story', size: 'md' %}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Product story",
+  "settings": [
+    { "type": "text", "id": "anchor", "label": "Anchor ID", "default": "the-vodka" },
+    { "type": "image_picker", "id": "image", "label": "Image" },
+    { "type": "text", "id": "image_alt", "label": "Image alt text" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "The Winter Wheat" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Clarity is subtraction, not addition." },
+    {
+      "type": "richtext", "id": "body", "label": "Body",
+      "default": "<p>Nine Below is distilled from winter wheat grown above the sixtieth parallel, where the cold slows the grain and concentrates the starch.</p><p>It runs through the column nine times, then rests against glacial basalt at nine degrees below zero. Cold filtration strips the harshness that carbon alone leaves behind. No sugar, no glycerol, no citrus masking.</p>"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "spec",
+      "name": "Specification",
+      "settings": [
+        { "type": "text", "id": "label", "label": "Label", "default": "Age" },
+        { "type": "text", "id": "value", "label": "Value", "default": "Nine times" }
+      ]
+    }
+  ],
+  "default": {
+    "settings": {},
+    "blocks": [
+      { "type": "spec", "settings": { "label": "Winter wheat",     "value": "Nordic" } },
+      { "type": "spec", "settings": { "label": "Distillations",  "value": "Nine times" } },
+      { "type": "spec", "settings": { "label": "Grain", "value": "Winter wheat, 60th parallel" } },
+      { "type": "spec", "settings": { "label": "Filtration",     "value": "Glacial basalt at −9°C" } },
+      { "type": "spec", "settings": { "label": "Bottle",     "value": "750ml" } },
+      { "type": "spec", "settings": { "label": "Strength",   "value": "40% ABV" } }
+    ]
+  },
+  "presets": [{ "name": "Product story" }]
+}
+{% endschema %}

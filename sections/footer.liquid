@@ -1,0 +1,130 @@
+{%- comment -%}
+  Footer. Keeps the existing compliance language verbatim — it is a regulatory
+  requirement, not copy to optimize.
+{%- endcomment -%}
+
+<footer class="footer" role="contentinfo">
+  <div class="wrap">
+    <div class="footer__top">
+
+      <div class="footer__brand">
+        {%- if settings.logo != blank -%}
+          <img src="{{ settings.logo | image_url: width: 360 }}"
+               alt="{{ shop.name | escape }}" width="180" height="46"
+               loading="lazy" decoding="async">
+        {%- else -%}
+          <span class="footer__wordmark">Nine Below</span>
+        {%- endif -%}
+        {%- if section.settings.tagline != blank -%}
+          <p class="footer__tagline">{{ section.settings.tagline }}</p>
+        {%- endif -%}
+      </div>
+
+      <div class="footer__cols">
+        {%- for block in section.blocks -%}
+          {%- if block.type == 'column' -%}
+            <div class="footer__col" {{ block.shopify_attributes }}>
+              <h3 class="footer__col-title">{{ block.settings.title }}</h3>
+              <ul>
+                {%- assign links = block.settings.links | newline_to_br | split: '<br />' -%}
+                {%- for link in links -%}
+                  {%- assign parts = link | strip | split: '|' -%}
+                  {%- if parts.size == 2 -%}
+                    <li>
+                      <a href="{{ parts[1] | strip }}"
+                         data-track-cta="footer:{{ parts[0] | strip | handleize }}">
+                        {{ parts[0] | strip }}
+                      </a>
+                    </li>
+                  {%- endif -%}
+                {%- endfor -%}
+              </ul>
+            </div>
+          {%- endif -%}
+        {%- endfor -%}
+
+        {%- comment -%}
+          Only render the Connect column when a link actually exists. An empty
+          heading over nothing reads as broken, and a link to a profile that
+          doesn't exist is worse — it dead-ends the visitor off-site.
+        {%- endcomment -%}
+        {%- if settings.social_instagram != blank or settings.social_tiktok != blank or settings.social_facebook != blank -%}
+          <div class="footer__col">
+            <h3 class="footer__col-title">Connect</h3>
+            <ul class="footer__social">
+              {%- if settings.social_instagram != blank -%}
+                <li><a href="{{ settings.social_instagram }}" rel="noopener noreferrer" target="_blank" data-track-cta="social:instagram">Instagram</a></li>
+              {%- endif -%}
+              {%- if settings.social_tiktok != blank -%}
+                <li><a href="{{ settings.social_tiktok }}" rel="noopener noreferrer" target="_blank" data-track-cta="social:tiktok">TikTok</a></li>
+              {%- endif -%}
+              {%- if settings.social_facebook != blank -%}
+                <li><a href="{{ settings.social_facebook }}" rel="noopener noreferrer" target="_blank" data-track-cta="social:facebook">Facebook</a></li>
+              {%- endif -%}
+            </ul>
+          </div>
+        {%- endif -%}
+      </div>
+    </div>
+
+    <div class="footer__legal">
+      {%- comment -%}
+        Opt-out link. This — not a blocking banner — is what US state privacy
+        laws require. Opens Shopify's native preferences dialog; falls through
+        to the privacy policy if that dialog isn't available.
+      {%- endcomment -%}
+      <p class="footer__privacy">
+        <a href="/pages/privacy-policy" data-privacy-choices>Your privacy choices</a>
+      </p>
+      <p class="footer__responsibility">{{ settings.responsibility_note }}</p>
+      <p class="footer__copy">
+        &copy; {{ 'now' | date: '%Y' }} {{ settings.copyright_name }}. All rights reserved.
+      </p>
+      {%- if section.settings.attribution != blank -%}
+        <p class="footer__attribution">{{ section.settings.attribution }}</p>
+      {%- endif -%}
+    </div>
+  </div>
+</footer>
+
+{% schema %}
+{
+  "name": "Footer",
+  "settings": [
+    { "type": "text", "id": "tagline", "label": "Tagline", "default": "Cold enough to be clean." },
+    { "type": "text", "id": "attribution", "label": "Attribution", "default": "Distilled and bottled in small batches" }
+  ],
+  "blocks": [
+    {
+      "type": "column",
+      "name": "Link column",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title", "default": "Explore" },
+        {
+          "type": "textarea", "id": "links", "label": "Links",
+          "info": "One per line, as: Label | /url",
+          "default": "Home | /"
+        }
+      ]
+    }
+  ],
+  "default": {
+    "blocks": [
+      {
+        "type": "column",
+        "settings": {
+          "title": "Explore",
+          "links": "Home | /\nThe Vodka | #the-vodka\nTasting notes | #tasting\nServe | #serve\nFAQ | #faq"
+        }
+      },
+      {
+        "type": "column",
+        "settings": {
+          "title": "Company",
+          "links": "Contact | /pages/contact\nPrivacy Policy | /pages/privacy-policy\nTerms of Use | /pages/terms-of-use\nShipping | #faq"
+        }
+      }
+    ]
+  }
+}
+{% endschema %}
