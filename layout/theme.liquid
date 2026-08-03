@@ -67,15 +67,15 @@
     They decide what the visitor sees; deferring either produces a visible flash
     of the wrong variant or of nav that then disappears.
   {%- endcomment -%}
-  {% render 'ab-framework' %}
-
   {%- comment -%}
-    Also inline and blocking, and also above <body>. It reads no A/B state, so
-    its position relative to ab-framework does not matter — what matters is that
-    it resolves before anything paints, or the site flashes before the gate.
+    Order matters here. landing-flow resolves the channel first, because
+    ab-framework can scope an experiment to one platform and needs to know which
+    platform this is before it buckets anyone. age-gate-head reads neither, and
+    only has to be above <body>.
   {%- endcomment -%}
-  {% render 'age-gate-head' %}
   {% render 'landing-flow' %}
+  {% render 'ab-framework' %}
+  {% render 'age-gate-head' %}
 
   <script>document.documentElement.className = document.documentElement.className.replace('no-js','js');</script>
 

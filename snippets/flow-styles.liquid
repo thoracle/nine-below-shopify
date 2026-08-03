@@ -44,5 +44,32 @@
   /* Outbound social links are the single biggest leak on an ad landing —
      the visitor came FROM social, sending them back is a guaranteed loss. */
   :root[data-flow="focus"] .footer__social { display: none !important; }
+
+  /* ---- per channel ----------------------------------------------------
+     The three platforms do not need the same treatment, so the strip is not
+     applied at one uniform strength.
+
+     Facebook carries the most desktop traffic and the most considered buyers.
+     Stripping a desktop page to a single column reads as a broken site rather
+     than a focused one, so the nav comes back above the mobile breakpoint. */
+  @media (min-width: 900px) {
+    :root[data-flow="focus"][data-channel="fb"] .header__nav { display: flex !important; }
+  }
+
+  /* TikTok and Instagram arrive on a phone, in an in-app browser, from a video.
+     Everything above the buy button is time spent not deciding, so the fold is
+     tightened rather than merely de-cluttered. */
+  @media (max-width: 899px) {
+    :root[data-flow="focus"][data-channel="tt"] .hero__sub,
+    :root[data-flow="focus"][data-channel="ig"] .hero__sub { display: none; }
+    :root[data-flow="focus"][data-channel="tt"] .hero__inner { padding-block-start: 0.5rem; }
+  }
+
+  /* In-app browsers put their own chrome over the bottom of the viewport, which
+     sits exactly where a sticky buy bar goes. Lift it clear, and respect the
+     safe-area inset so it clears the home indicator too. */
+  :root[data-webview] .stickybar {
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px) + 14px);
+  }
 {% endstyle %}
 {%- endif -%}

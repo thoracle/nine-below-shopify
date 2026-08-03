@@ -99,6 +99,22 @@
 
       var control = names[0];
 
+      /* An experiment can be pinned to one platform with `"channel": "tt"`, or
+         several with `"channel": "ig,fb"`. Traffic from anywhere else sees the
+         control and is not reported — the same treatment as a holdout, because
+         that is what it is. Without this, a TikTok-specific headline would be
+         shown to Facebook traffic and both arms would be polluted. */
+      if (exp.channel) {
+        var want = String(exp.channel).toLowerCase().split(/[,\s]+/).filter(Boolean);
+        var here = root.getAttribute('data-channel');
+        if (!here || want.indexOf(here) === -1) {
+          active[id] = null;
+          root.setAttribute('data-ab-' + id, control);
+          names.forEach(function (v) { if (v !== control) hide.push('[data-ab="' + id + ':' + v + '"]'); });
+          return;
+        }
+      }
+
       if (exp.enabled === false) {
         // Switched off: everyone sees the control, and nothing is reported.
         active[id] = null;

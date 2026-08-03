@@ -131,15 +131,54 @@
       {%- endif -%}
 
       {%- comment -%}
-        Headline test. Both arms render; the framework hides the one this
-        visitor didn't get, before paint. Leaving Headline B blank collapses
-        this back to a single unmarked <h1> with no experiment overhead.
+        Headline, in three layers.
+
+        1. Per-channel overrides. The strongest lever on an ad landing is
+           message match — the page finishing the sentence the ad started. A
+           visitor who just watched a fifteen-second TikTok is not looking for
+           the same opening line as someone who clicked a Facebook carousel.
+           `data-ch` blocks are hidden unless that channel is the one that sent
+           them; the untargeted headline carries `data-ch-not` for every channel
+           that HAS an override, so exactly one <h1> is ever visible.
+
+        2. The headline A/B test, on the untargeted headline.
+
+        3. Plain <h1> when neither is configured.
+
+        Leaving a field blank removes that layer entirely — no empty elements,
+        no experiment overhead.
       {%- endcomment -%}
+      {%- liquid
+        assign ch_overrides = ''
+        if section.settings.heading_ig != blank
+          assign ch_overrides = ch_overrides | append: 'ig '
+        endif
+        if section.settings.heading_tt != blank
+          assign ch_overrides = ch_overrides | append: 'tt '
+        endif
+        if section.settings.heading_fb != blank
+          assign ch_overrides = ch_overrides | append: 'fb '
+        endif
+        assign ch_overrides = ch_overrides | strip
+      -%}
+
+      {%- if section.settings.heading_ig != blank -%}
+        <h1 class="hero__title" data-ch="ig">{{ section.settings.heading_ig }}</h1>
+      {%- endif -%}
+      {%- if section.settings.heading_tt != blank -%}
+        <h1 class="hero__title" data-ch="tt">{{ section.settings.heading_tt }}</h1>
+      {%- endif -%}
+      {%- if section.settings.heading_fb != blank -%}
+        <h1 class="hero__title" data-ch="fb">{{ section.settings.heading_fb }}</h1>
+      {%- endif -%}
+
+      {%- capture ch_not -%}{%- if ch_overrides != blank %} data-ch-not="{{ ch_overrides }}"{% endif -%}{%- endcapture -%}
+
       {%- if settings.ab_enabled and section.settings.heading_b != blank -%}
-        <h1 class="hero__title" data-ab="hero_headline:a">{{ section.settings.heading }}</h1>
-        <h1 class="hero__title" data-ab="hero_headline:b">{{ section.settings.heading_b }}</h1>
+        <h1 class="hero__title" data-ab="hero_headline:a"{{ ch_not }}>{{ section.settings.heading }}</h1>
+        <h1 class="hero__title" data-ab="hero_headline:b"{{ ch_not }}>{{ section.settings.heading_b }}</h1>
       {%- else -%}
-        <h1 class="hero__title">{{ section.settings.heading }}</h1>
+        <h1 class="hero__title"{{ ch_not }}>{{ section.settings.heading }}</h1>
       {%- endif -%}
 
       {%- if section.settings.subheading != blank -%}
@@ -247,6 +286,11 @@
       "type": "textarea", "id": "heading_b", "label": "Headline — variant B",
       "info": "Leave blank for no headline test. Requires the `hero_headline` experiment to be enabled in Theme settings → A/B testing."
     },
+    { "type": "header", "content": "Per-channel headlines" },
+    { "type": "paragraph", "content": "Shown only to visitors from that platform, overriding the headline above and any headline test. Leave blank to serve the same headline everywhere. Test with ?ch=tt on any URL." },
+    { "type": "text", "id": "heading_ig", "label": "Instagram headline", "default": "" },
+    { "type": "text", "id": "heading_tt", "label": "TikTok headline", "default": "" },
+    { "type": "text", "id": "heading_fb", "label": "Facebook headline", "default": "" },
     {
       "type": "image_picker", "id": "background_image_b", "label": "Background — variant B (desktop)",
       "info": "Leave blank for no image test. Uploading one activates the `hero_image` experiment arm B: this background replaces the default and the bottle cut-out is hidden. Same sizing as the main background."

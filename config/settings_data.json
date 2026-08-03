@@ -56,9 +56,8 @@
     "content_for_index": [],
     "consent_default": "granted",
     "ab_enabled": true,
-    "ab_experiments": "{\"age_gate\":{\"enabled\":true,\"traffic\":100,\"variants\":{\"a\":50,\"b\":50}},\"hero_headline\":{\"enabled\":false,\"traffic\":100,\"variants\":{\"a\":50,\"b\":50}},\"hero_image\":{\"enabled\":false,\"traffic\":100,\"variants\":{\"a\":50,\"b\":50}},\"hero_layout\":{\"enabled\":false,\"traffic\":100,\"variants\":{\"a\":50,\"b\":50}}}",
+    "ab_experiments": "{\"age_gate\":{\"enabled\":true,\"traffic\":100,\"variants\":{\"a\":50,\"b\":50}},\"hero_headline\":{\"enabled\":false,\"traffic\":100,\"variants\":{\"a\":50,\"b\":50}},\"hero_image\":{\"enabled\":false,\"traffic\":100,\"variants\":{\"a\":50,\"b\":50}},\"hero_layout\":{\"enabled\":false,\"traffic\":100,\"variants\":{\"a\":50,\"b\":50}},\"tt_headline\":{\"enabled\":false,\"traffic\":100,\"channel\":\"tt\",\"variants\":{\"a\":50,\"b\":50}}}",
     "flow_enabled": true,
-    "flow_sources": "instagram,ig,tiktok,facebook,meta,fb",
     "flow_hide_nav": true,
     "flow_hide_footer_nav": true,
     "flow_hide_secondary_cta": true,
@@ -67,7 +66,10 @@
     "age_gate_dob_eyebrow": "Welcome",
     "age_gate_dob_heading": "Are you of legal drinking age?",
     "age_gate_dob_cta": "Confirm & Enter",
-    "age_gate_dob_invalid": "Please enter a valid birthdate."
+    "age_gate_dob_invalid": "Please enter a valid birthdate.",
+    "flow_channel_ig": "instagram,ig,insta,igshopping",
+    "flow_channel_tt": "tiktok,tt,tiktokads,bytedance",
+    "flow_channel_fb": "facebook,fb,meta,messenger,audience_network"
   },
   "platform_customizations": {}
 }

@@ -1,21 +1,33 @@
 {%- comment -%}
-  Focused paid-social flow.
+  Paid-social landing flow — channel aware.
 
-  Someone arriving from an Instagram or TikTok ad has one job: decide on this
-  product. Every nav link, footer column and secondary CTA is an exit that costs
-  you a click you already paid for. This strips the page to the buy path.
+  Someone arriving from an ad has one job: decide on this product. Every nav
+  link, footer column and secondary CTA is an exit that costs a click you already
+  paid for. This strips the page to the buy path, and it also works out WHICH
+  platform sent them, because the three do not behave alike:
 
-  Like the A/B assignment, it resolves INLINE in <head> before paint — otherwise
-  the full nav renders and then vanishes, which looks broken and is worse than
-  leaving it in.
+    ig  Instagram — visual-led, almost entirely mobile, opens in Meta's webview
+    tt  TikTok — youngest audience by a wide margin, which on a 21+ product
+        means a much higher age-gate rejection rate. Blend that into one number
+        and TikTok looks like it converts badly when really it is being carded.
+    fb  Facebook — older, more desktop, more considered. Needs the least
+        stripping and the most reassurance.
 
-  Triggered by:
-    · ?flow=focus (explicit — use this in ad links you fully control)
-    · utm_source matching the configured list (instagram, tiktok, facebook…)
-    · Referrer matching those platforms, as a fallback for stripped params
+  Resolving the channel is what lets you report those separately and target copy
+  at each. Resolving the WEBVIEW matters just as much and is easier to miss: all
+  three platforms open links inside their own in-app browser, where
 
-  Held in sessionStorage, so internal navigation stays in the flow but a return
-  visit next week starts clean.
+    · storage is often partitioned or wiped, so an A/B assignment may not
+      survive to a second session and the same person can be re-bucketed
+    · `target="_blank"` opens a tab with no history and no way back
+    · a third-party checkout widget may be cramped or outright broken
+
+  None of that is fixable from here, but all of it is measurable, and a funnel
+  that dies in the Instagram browser looks identical to bad creative until you
+  can split the two.
+
+  Resolves INLINE in <head> before paint — otherwise the full nav renders and
+  then vanishes, which looks broken and is worse than leaving it alone.
 
   What it NEVER hides: the age gate, the responsibility statement, the legal
   purchase notice, and the privacy/terms links. Those are compliance, not
@@ -29,56 +41,136 @@
 
     var KEY = 'nb_flow';
     var root = document.documentElement;
-    var sources = {{ settings.flow_sources | default: 'instagram,ig,tiktok,facebook,meta,fb' | split: ',' | json }};
+
+    var ALIASES = {
+      ig: {{ settings.flow_channel_ig | default: 'instagram,ig,insta,igshopping' | split: ',' | json }},
+      tt: {{ settings.flow_channel_tt | default: 'tiktok,tt,tiktokads,bytedance' | split: ',' | json }},
+      fb: {{ settings.flow_channel_fb | default: 'facebook,fb,meta,messenger,audience_network' | split: ',' | json }}
+    };
+    var CH = ['ig', 'tt', 'fb'];
 
     function norm(s) { return String(s || '').trim().toLowerCase(); }
-    var list = sources.map(norm).filter(Boolean);
+    CH.forEach(function (c) { ALIASES[c] = (ALIASES[c] || []).map(norm).filter(Boolean); });
 
-    var qs = new URLSearchParams(location.search);
-    var mode = null;
-
-    // 1. Explicit — highest confidence, and what you should put in ad links.
-    var flow = norm(qs.get('flow'));
-    if (flow === 'focus' || flow === 'ig' || flow === 'social') mode = 'focus';
-    if (flow === 'full' || flow === 'off') mode = 'full';
-
-    // 2. Campaign parameters.
-    if (!mode) {
-      var src = norm(qs.get('utm_source'));
-      var med = norm(qs.get('utm_medium'));
-      if (src && list.indexOf(src) !== -1) mode = 'focus';
-      else if (med && list.indexOf(med) !== -1) mode = 'focus';
+    function channelFor(value) {
+      var v = norm(value);
+      if (!v) return null;
+      for (var i = 0; i < CH.length; i++) {
+        if (ALIASES[CH[i]].indexOf(v) !== -1) return CH[i];
+      }
+      return null;
     }
 
-    // 3. Referrer, for in-app browsers that drop query params.
-    if (!mode && document.referrer) {
-      var host = '';
-      try { host = new URL(document.referrer).hostname.toLowerCase(); } catch (e) {}
-      if (host) {
-        for (var i = 0; i < list.length; i++) {
-          if (list[i] && host.indexOf(list[i]) !== -1) { mode = 'focus'; break; }
+    /* Substring rather than exact match — a referrer is `l.instagram.com`, not
+       `instagram`, and utm_source is sometimes `tiktok_ads_manager`. Aliases of
+       two characters or fewer are excluded here: matching a bare `tt` or `fb`
+       anywhere in a string would fire on almost anything. */
+    function channelIn(text) {
+      var t = norm(text);
+      if (!t) return null;
+      for (var i = 0; i < CH.length; i++) {
+        var a = ALIASES[CH[i]];
+        for (var j = 0; j < a.length; j++) {
+          if (a[j].length > 2 && t.indexOf(a[j]) !== -1) return CH[i];
         }
       }
+      return null;
     }
 
-    // 4. Otherwise inherit whatever this session already decided.
-    if (!mode) {
-      try { mode = sessionStorage.getItem(KEY); } catch (e) {}
+    /* ---- in-app browser ------------------------------------------------
+       Checked before the referrer, because a webview is a stronger signal than
+       a referrer that any redirect can strip or rewrite. */
+    var ua = navigator.userAgent || '';
+    var webview = null;
+    if (/FBAN|FBAV|FB_IAB|FBIOS/i.test(ua)) webview = 'fb';
+    else if (/Instagram/i.test(ua)) webview = 'ig';
+    else if (/BytedanceWebview|ByteLocale|TikTok|musical_ly|Bytedance/i.test(ua)) webview = 'tt';
+    else if (/;\s*wv\)/i.test(ua)) webview = 'generic';   // generic Android WebView
+
+    /* ---- resolve --------------------------------------------------------- */
+    var qs = new URLSearchParams(location.search);
+    var mode = null, channel = null, via = null;
+
+    // 1. Explicit. This is what belongs in ad links you control.
+    var flow = norm(qs.get('flow'));
+    var chParam = norm(qs.get('ch'));
+    if (!chParam && CH.indexOf(flow) !== -1) chParam = flow;
+
+    if (flow === 'full' || flow === 'off') { mode = 'full'; via = 'param'; }
+    else if (chParam && CH.indexOf(chParam) !== -1) { channel = chParam; mode = 'focus'; via = 'param'; }
+    else if (flow === 'focus' || flow === 'social') { mode = 'focus'; via = 'param'; }
+
+    // 2. Campaign parameters.
+    if (mode !== 'full' && !channel) {
+      var src = qs.get('utm_source'), med = qs.get('utm_medium'), cmp = qs.get('utm_campaign');
+      channel = channelFor(src) || channelFor(med) ||
+                channelIn(src) || channelIn(med) || channelIn(cmp);
+      if (channel) { mode = 'focus'; via = via || 'utm'; }
+    }
+
+    // 3. The in-app browser itself.
+    if (mode !== 'full' && !channel && webview && webview !== 'generic') {
+      channel = webview; mode = 'focus'; via = via || 'webview';
+    }
+
+    // 4. Referrer, for links that arrive with parameters stripped.
+    if (mode !== 'full' && !channel && document.referrer) {
+      var host = '';
+      try { host = new URL(document.referrer).hostname; } catch (e) {}
+      channel = channelIn(host);
+      if (channel) { mode = 'focus'; via = via || 'referrer'; }
+    }
+
+    // 5. Otherwise inherit whatever this session already decided, so internal
+    //    navigation stays in the flow but a visit next week starts clean.
+    if (mode !== 'full' && !mode) {
+      try {
+        var saved = JSON.parse(sessionStorage.getItem(KEY) || 'null');
+        if (saved && saved.mode) { mode = saved.mode; channel = saved.channel || null; via = 'session'; }
+      } catch (e) {}
     }
 
     if (mode === 'full') {
       try { sessionStorage.removeItem(KEY); } catch (e) {}
-      mode = null;
+      mode = null; channel = null;
     }
 
+    /* ---- publish --------------------------------------------------------- */
     if (mode === 'focus') {
       root.setAttribute('data-flow', 'focus');
-      try { sessionStorage.setItem(KEY, 'focus'); } catch (e) {}
+      try { sessionStorage.setItem(KEY, JSON.stringify({ mode: mode, channel: channel })); } catch (e) {}
+    }
+    if (channel) root.setAttribute('data-channel', channel);
+    if (webview) root.setAttribute('data-webview', webview);
+
+    /* Channel-targeted markup, using the same hide-the-others approach as the
+       A/B framework rather than hide-everything-then-reveal — that would need
+       `display: revert`, which throws away whatever display value the element
+       actually wanted.
+
+         <p data-ch="tt">Shown only to TikTok traffic</p>
+         <p data-ch="ig fb">Shown to Instagram or Facebook</p>
+         <p data-ch-not="tt">Shown to everyone except TikTok</p>
+
+       With no channel resolved, every `data-ch` block is hidden and every
+       `data-ch-not` block shows — so the default page is the un-targeted one. */
+    var hide = [];
+    CH.forEach(function (c) { if (c !== channel) hide.push('[data-ch~="' + c + '"]'); });
+    if (channel) hide.push('[data-ch-not~="' + channel + '"]');
+    if (hide.length) {
+      var s = document.createElement('style');
+      s.id = 'flow-hide';
+      s.textContent = hide.join(',') + '{display:none !important}';
+      document.head.appendChild(s);
     }
 
     window.NINEBELOW_FLOW = {
       mode: mode || 'full',
-      isFocus: mode === 'focus'
+      isFocus: mode === 'focus',
+      channel: channel,          // 'ig' | 'tt' | 'fb' | null
+      via: via,                  // how it was decided — useful when a number looks wrong
+      webview: webview,          // 'ig' | 'fb' | 'tt' | 'generic' | null
+      inApp: !!webview
     };
   })();
 </script>

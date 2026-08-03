@@ -57,6 +57,7 @@ python3 -m http.server 8090      # run from THIS folder, not its parent —
 | `?ab=reset` | clears assignments and re-buckets |
 | `?agegate=reset` | re-opens the age gate after you have confirmed |
 | `?flow=focus` | shows the stripped paid-social view |
+| `?ch=ig` / `?ch=tt` / `?ch=fb` | forces a channel landing |
 
 ## Imagery — all mock
 
@@ -90,6 +91,38 @@ script, or a 404 on any asset all leave the gate up and the content hidden.
 `assets/age-gate.js` is deliberately its own file, loaded before `theme.js`, so
 an unrelated error elsewhere cannot strand a visitor behind a panel with nothing
 wired to it.
+
+## Channel landings
+
+Instagram, TikTok and Facebook do not behave alike, so they do not get the same
+page. The channel resolves before paint from `?ch=`, then `utm_source` /
+`utm_medium` / `utm_campaign`, then the in-app browser's user agent, then the
+referrer — and is remembered for the session.
+
+| | Treatment |
+|---|---|
+| `ig` | Visual-led headline. Subheading dropped on mobile to tighten the fold. |
+| `tt` | Hook headline that pays off the video. Tightest fold of the three. |
+| `fb` | Reassurance-led headline. Header nav kept on desktop, where a one-column strip reads as broken rather than focused. |
+
+Any element can be targeted without duplicating a section:
+
+```html
+<p data-ch="tt">TikTok only</p>
+<p data-ch="ig fb">Instagram or Facebook</p>
+<p data-ch-not="tt">Everyone except TikTok</p>
+```
+
+An experiment can be pinned to one platform with `"channel": "tt"` in the
+experiment JSON. Traffic from anywhere else sees the control and is not
+reported, so a TikTok-only headline test never pollutes Facebook's numbers.
+
+**In-app browsers are detected separately from the channel.** All three
+platforms open links inside their own webview, where storage is often
+partitioned, `target="_blank"` opens a tab with no way back, and a third-party
+checkout can be cramped or broken. None of that is fixable from the theme, but
+`webview` and `in_app_browser` ride on every event, so a funnel dying in the
+Instagram browser is distinguishable from bad creative.
 
 ## Measurement
 

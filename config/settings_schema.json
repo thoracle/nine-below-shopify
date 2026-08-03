@@ -460,11 +460,31 @@
         "default": true
       },
       {
+        "type": "header",
+        "content": "Channels"
+      },
+      {
+        "type": "paragraph",
+        "content": "Which platform sent the visitor, resolved from utm_source, the referrer, or the in-app browser. Drives per-channel copy, per-channel styling, and lets an experiment be scoped to one platform with \"channel\": \"tt\" in the experiment JSON."
+      },
+      {
         "type": "text",
-        "id": "flow_sources",
-        "label": "Trigger sources",
-        "default": "instagram,ig,tiktok,facebook,meta,fb",
-        "info": "Matched against utm_source, utm_medium, and the referring domain. Comma separated."
+        "id": "flow_channel_ig",
+        "label": "Instagram aliases",
+        "default": "instagram,ig,insta,igshopping"
+      },
+      {
+        "type": "text",
+        "id": "flow_channel_tt",
+        "label": "TikTok aliases",
+        "default": "tiktok,tt,tiktokads,bytedance"
+      },
+      {
+        "type": "text",
+        "id": "flow_channel_fb",
+        "label": "Facebook aliases",
+        "default": "facebook,fb,meta,messenger,audience_network",
+        "info": "Comma separated, matched against utm_source, utm_medium, utm_campaign and the referring domain. Aliases of two characters or fewer are only used for exact matches."
       },
       {
         "type": "checkbox",

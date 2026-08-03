@@ -45,6 +45,34 @@
     :root{--header-h:60px}
     body.has-sticky-bar{--stickybar-h:76px}
   }
+
+/* Mirrors snippets/flow-styles.liquid — per-channel rules */
+/* ---- per channel ----------------------------------------------------
+     The three platforms do not need the same treatment, so the strip is not
+     applied at one uniform strength.
+
+     Facebook carries the most desktop traffic and the most considered buyers.
+     Stripping a desktop page to a single column reads as a broken site rather
+     than a focused one, so the nav comes back above the mobile breakpoint. */
+  @media (min-width: 900px) {
+    :root[data-flow="focus"][data-channel="fb"] .header__nav { display: flex !important; }
+  }
+
+  /* TikTok and Instagram arrive on a phone, in an in-app browser, from a video.
+     Everything above the buy button is time spent not deciding, so the fold is
+     tightened rather than merely de-cluttered. */
+  @media (max-width: 899px) {
+    :root[data-flow="focus"][data-channel="tt"] .hero__sub,
+    :root[data-flow="focus"][data-channel="ig"] .hero__sub { display: none; }
+    :root[data-flow="focus"][data-channel="tt"] .hero__inner { padding-block-start: 0.5rem; }
+  }
+
+  /* In-app browsers put their own chrome over the bottom of the viewport, which
+     sits exactly where a sticky buy bar goes. Lift it clear, and respect the
+     safe-area inset so it clears the home indicator too. */
+  :root[data-webview] .stickybar {
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px) + 14px);
+  }
 </style>
 
 <link rel="stylesheet" href="../assets/theme.css">
@@ -146,29 +174,145 @@
 })();
 </script>
 
-<!-- Mirrors snippets/landing-flow.liquid -->
+<!-- Mirrors snippets/landing-flow.liquid — channel + webview, before paint -->
 <script>
-(function(){
-  'use strict';
-  var KEY='nb_flow', root=document.documentElement;
-  var list=['instagram','ig','tiktok','facebook','meta','fb'];
-  function norm(s){ return String(s||'').trim().toLowerCase(); }
-  var qs=new URLSearchParams(location.search), mode=null;
-  var flow=norm(qs.get('flow'));
-  if(flow==='focus'||flow==='ig'||flow==='social') mode='focus';
-  if(flow==='full'||flow==='off') mode='full';
-  if(!mode){ var src=norm(qs.get('utm_source')), med=norm(qs.get('utm_medium'));
-    if(src&&list.indexOf(src)!==-1) mode='focus';
-    else if(med&&list.indexOf(med)!==-1) mode='focus'; }
-  if(!mode&&document.referrer){ var h='';
-    try{ h=new URL(document.referrer).hostname.toLowerCase(); }catch(e){}
-    if(h){ for(var i=0;i<list.length;i++){ if(list[i]&&h.indexOf(list[i])!==-1){ mode='focus'; break; } } } }
-  if(!mode){ try{ mode=sessionStorage.getItem(KEY); }catch(e){} }
-  if(mode==='full'){ try{ sessionStorage.removeItem(KEY); }catch(e){} mode=null; }
-  if(mode==='focus'){ root.setAttribute('data-flow','focus');
-    try{ sessionStorage.setItem(KEY,'focus'); }catch(e){} }
-  window.NINEBELOW_FLOW={ mode: mode||'full', isFocus: mode==='focus' };
-})();
+  (function () {
+    'use strict';
+
+    var KEY = 'nb_flow';
+    var root = document.documentElement;
+
+    var ALIASES = {
+      ig: ["instagram","ig","insta","igshopping"],
+      tt: ["tiktok","tt","tiktokads","bytedance"],
+      fb: ["facebook","fb","meta","messenger","audience_network"]
+    };
+    var CH = ['ig', 'tt', 'fb'];
+
+    function norm(s) { return String(s || '').trim().toLowerCase(); }
+    CH.forEach(function (c) { ALIASES[c] = (ALIASES[c] || []).map(norm).filter(Boolean); });
+
+    function channelFor(value) {
+      var v = norm(value);
+      if (!v) return null;
+      for (var i = 0; i < CH.length; i++) {
+        if (ALIASES[CH[i]].indexOf(v) !== -1) return CH[i];
+      }
+      return null;
+    }
+
+    /* Substring rather than exact match — a referrer is `l.instagram.com`, not
+       `instagram`, and utm_source is sometimes `tiktok_ads_manager`. Aliases of
+       two characters or fewer are excluded here: matching a bare `tt` or `fb`
+       anywhere in a string would fire on almost anything. */
+    function channelIn(text) {
+      var t = norm(text);
+      if (!t) return null;
+      for (var i = 0; i < CH.length; i++) {
+        var a = ALIASES[CH[i]];
+        for (var j = 0; j < a.length; j++) {
+          if (a[j].length > 2 && t.indexOf(a[j]) !== -1) return CH[i];
+        }
+      }
+      return null;
+    }
+
+    /* ---- in-app browser ------------------------------------------------
+       Checked before the referrer, because a webview is a stronger signal than
+       a referrer that any redirect can strip or rewrite. */
+    var ua = navigator.userAgent || '';
+    var webview = null;
+    if (/FBAN|FBAV|FB_IAB|FBIOS/i.test(ua)) webview = 'fb';
+    else if (/Instagram/i.test(ua)) webview = 'ig';
+    else if (/BytedanceWebview|ByteLocale|TikTok|musical_ly|Bytedance/i.test(ua)) webview = 'tt';
+    else if (/;\s*wv\)/i.test(ua)) webview = 'generic';   // generic Android WebView
+
+    /* ---- resolve --------------------------------------------------------- */
+    var qs = new URLSearchParams(location.search);
+    var mode = null, channel = null, via = null;
+
+    // 1. Explicit. This is what belongs in ad links you control.
+    var flow = norm(qs.get('flow'));
+    var chParam = norm(qs.get('ch'));
+    if (!chParam && CH.indexOf(flow) !== -1) chParam = flow;
+
+    if (flow === 'full' || flow === 'off') { mode = 'full'; via = 'param'; }
+    else if (chParam && CH.indexOf(chParam) !== -1) { channel = chParam; mode = 'focus'; via = 'param'; }
+    else if (flow === 'focus' || flow === 'social') { mode = 'focus'; via = 'param'; }
+
+    // 2. Campaign parameters.
+    if (mode !== 'full' && !channel) {
+      var src = qs.get('utm_source'), med = qs.get('utm_medium'), cmp = qs.get('utm_campaign');
+      channel = channelFor(src) || channelFor(med) ||
+                channelIn(src) || channelIn(med) || channelIn(cmp);
+      if (channel) { mode = 'focus'; via = via || 'utm'; }
+    }
+
+    // 3. The in-app browser itself.
+    if (mode !== 'full' && !channel && webview && webview !== 'generic') {
+      channel = webview; mode = 'focus'; via = via || 'webview';
+    }
+
+    // 4. Referrer, for links that arrive with parameters stripped.
+    if (mode !== 'full' && !channel && document.referrer) {
+      var host = '';
+      try { host = new URL(document.referrer).hostname; } catch (e) {}
+      channel = channelIn(host);
+      if (channel) { mode = 'focus'; via = via || 'referrer'; }
+    }
+
+    // 5. Otherwise inherit whatever this session already decided, so internal
+    //    navigation stays in the flow but a visit next week starts clean.
+    if (mode !== 'full' && !mode) {
+      try {
+        var saved = JSON.parse(sessionStorage.getItem(KEY) || 'null');
+        if (saved && saved.mode) { mode = saved.mode; channel = saved.channel || null; via = 'session'; }
+      } catch (e) {}
+    }
+
+    if (mode === 'full') {
+      try { sessionStorage.removeItem(KEY); } catch (e) {}
+      mode = null; channel = null;
+    }
+
+    /* ---- publish --------------------------------------------------------- */
+    if (mode === 'focus') {
+      root.setAttribute('data-flow', 'focus');
+      try { sessionStorage.setItem(KEY, JSON.stringify({ mode: mode, channel: channel })); } catch (e) {}
+    }
+    if (channel) root.setAttribute('data-channel', channel);
+    if (webview) root.setAttribute('data-webview', webview);
+
+    /* Channel-targeted markup, using the same hide-the-others approach as the
+       A/B framework rather than hide-everything-then-reveal — that would need
+       `display: revert`, which throws away whatever display value the element
+       actually wanted.
+
+         <p data-ch="tt">Shown only to TikTok traffic</p>
+         <p data-ch="ig fb">Shown to Instagram or Facebook</p>
+         <p data-ch-not="tt">Shown to everyone except TikTok</p>
+
+       With no channel resolved, every `data-ch` block is hidden and every
+       `data-ch-not` block shows — so the default page is the un-targeted one. */
+    var hide = [];
+    CH.forEach(function (c) { if (c !== channel) hide.push('[data-ch~="' + c + '"]'); });
+    if (channel) hide.push('[data-ch-not~="' + channel + '"]');
+    if (hide.length) {
+      var s = document.createElement('style');
+      s.id = 'flow-hide';
+      s.textContent = hide.join(',') + '{display:none !important}';
+      document.head.appendChild(s);
+    }
+
+    window.NINEBELOW_FLOW = {
+      mode: mode || 'full',
+      isFocus: mode === 'focus',
+      channel: channel,          // 'ig' | 'tt' | 'fb' | null
+      via: via,                  // how it was decided — useful when a number looks wrong
+      webview: webview,          // 'ig' | 'fb' | 'tt' | 'generic' | null
+      inApp: !!webview
+    };
+  })();
 </script>
 
 <!-- Mirrors snippets/flow-styles.liquid -->
@@ -407,8 +551,11 @@ html[data-age="ok"] #age-gate.is-leaving { display: grid !important; }
     <div class="hero__inner">
       <div class="hero__content">
         <p class="eyebrow hero__eyebrow">Nordic winter wheat vodka</p>
-        <h1 class="hero__title" data-ab="hero_headline:a">Nine distillations. One clean finish.</h1>
-        <h1 class="hero__title" data-ab="hero_headline:b">Distilled nine times. Filtered at nine below.</h1>
+        <h1 class="hero__title" data-ch="ig">Clear enough to see the cold in it.</h1>
+        <h1 class="hero__title" data-ch="tt">Why it's called Nine Below.</h1>
+        <h1 class="hero__title" data-ch="fb">No sugar. No glycerol. Nothing to hide behind.</h1>
+        <h1 class="hero__title" data-ab="hero_headline:a" data-ch-not="ig tt fb">Nine distillations. One clean finish.</h1>
+        <h1 class="hero__title" data-ab="hero_headline:b" data-ch-not="ig tt fb">Distilled nine times. Filtered at nine below.</h1>
         <p class="hero__sub">Winter wheat from the sixtieth parallel, distilled nine times, then filtered at nine degrees below zero through glacial basalt. Nothing added, nothing left behind.</p>
 
         <ul class="hero__proof">

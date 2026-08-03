@@ -101,6 +101,7 @@
     <li><strong>Variants are assigned before first paint.</strong> Inline and blocking, so nobody sees arm A flash before arm B — which would otherwise bias the very result you are measuring.</li>
     <li><strong>Exposure is counted when the visitor can actually see the thing.</strong> Impressions are held behind the gate, because counting someone who never got past it deflates every conversion rate and makes the sample-size target too small.</li>
     <li><strong>Checkout is off-domain</strong>, so the funnel is instrumented from the outside and the experiment arm is carried into the retailer's UTM payload — the only way the result reconciles to revenue.</li>
+    <li><strong>The landing adapts to the platform that sent you.</strong> Instagram, TikTok and Facebook get their own headline and their own degree of stripping, resolved before paint from the campaign parameters, the referrer, or the in-app browser itself. Every event carries the channel, so TikTok's much higher age-gate rejection rate never hides inside a blended number.</li>
   </ul>
 
   <h2>Try the framework</h2>
@@ -114,6 +115,9 @@
         <tr><td><a href="preview/?agegate=reset">?agegate=reset</a></td><td>Re-opens the age gate after you have confirmed</td></tr>
         <tr><td><a href="preview/?debug=1&amp;agegate=reset">?debug=1</a></td><td>Shows the live GA4 event inspector</td></tr>
         <tr><td><a href="preview/?flow=focus&amp;agegate=reset">?flow=focus</a></td><td>The stripped-back view served to paid-social traffic</td></tr>
+        <tr><td><a href="preview/?ch=ig&amp;agegate=reset">?ch=ig</a></td><td>The Instagram landing — visual-led headline</td></tr>
+        <tr><td><a href="preview/?ch=tt&amp;agegate=reset">?ch=tt</a></td><td>The TikTok landing — hook headline, tighter fold</td></tr>
+        <tr><td><a href="preview/?ch=fb&amp;agegate=reset">?ch=fb</a></td><td>The Facebook landing — nav kept on desktop</td></tr>
       </tbody>
     </table>
   </div>

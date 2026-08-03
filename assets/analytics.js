@@ -54,8 +54,17 @@
       for (var k in p) { if (p.hasOwnProperty(k)) ctx[k] = p[k]; }
     }
 
+    /* Channel and in-app browser ride on EVERY event, for the same reason the
+       A/B arm does: without them, TikTok's higher age-gate rejection and the
+       Instagram browser's broken checkout both show up as "the site converts
+       badly" and neither is findable. */
     var flow = window.NINEBELOW_FLOW;
-    if (flow && flow.mode) ctx.flow_mode = flow.mode;
+    if (flow) {
+      if (flow.mode) ctx.flow_mode = flow.mode;
+      if (flow.channel) ctx.channel = flow.channel;
+      if (flow.webview) ctx.webview = flow.webview;
+      ctx.in_app_browser = !!flow.inApp;
+    }
 
     return ctx;
   }
