@@ -96,11 +96,27 @@
   {%- endfor -%}
 
   {%- for ch in channels -%}
+    {%- comment -%}
+      Static property access, not `settings[variable]`. The dynamic form is used
+      nowhere else in this theme and is not worth the risk here: if it did not
+      resolve, `list_a` would fall back to the base list and everything would
+      look fine, while `list_b` stayed blank and the A/B silently never ran.
+      A `case` keeps the emit logic below in one place without that exposure.
+    {%- endcomment -%}
+    {%- case ch -%}
+      {%- when 'ig' -%}
+        {%- assign list_a = settings.flow_hide_sections_ig -%}
+        {%- assign list_b = settings.flow_hide_sections_ig_b -%}
+      {%- when 'tt' -%}
+        {%- assign list_a = settings.flow_hide_sections_tt -%}
+        {%- assign list_b = settings.flow_hide_sections_tt_b -%}
+      {%- when 'fb' -%}
+        {%- assign list_a = settings.flow_hide_sections_fb -%}
+        {%- assign list_b = settings.flow_hide_sections_fb_b -%}
+    {%- endcase -%}
     {%- liquid
-      assign key_a = 'flow_hide_sections_' | append: ch
-      assign key_b = key_a | append: '_b'
-      assign list_a = settings[key_a] | default: ''
-      assign list_b = settings[key_b] | default: ''
+      assign list_a = list_a | default: ''
+      assign list_b = list_b | default: ''
       if list_a == blank
         assign list_a = strip_base
       endif

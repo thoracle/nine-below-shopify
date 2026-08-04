@@ -161,64 +161,6 @@
   })();
 </script>
 
-<!-- Mirrors snippets/ab-framework.liquid — inline and blocking, before paint -->
-<script id="ab-registry" type="application/json">
-{"age_gate":{"enabled":true,"traffic":100,"variants":{"a":50,"b":50}},
- "hero_headline":{"enabled":true,"traffic":100,"variants":{"a":50,"b":50}},
- "hero_image":{"enabled":true,"traffic":100,"variants":{"a":50,"b":50}},
- "hero_layout":{"enabled":false,"traffic":100,"variants":{"a":50,"b":50}},
- "ig_strip":{"enabled":true,"traffic":100,"channel":"ig","variants":{"a":50,"b":50}}}
-</script>
-<script>
-(function(){
-  'use strict';
-  var STORE='nb_ab_v1', COOKIE='nb_ab', root=document.documentElement, registry={};
-  try{ registry=JSON.parse(document.getElementById('ab-registry').textContent)||{}; }
-  catch(e){ console.warn('[AB] bad registry JSON'); registry={}; }
-  var stored={};
-  try{ stored=JSON.parse(localStorage.getItem(STORE))||{}; }catch(e){ stored={}; }
-  var qs=new URLSearchParams(location.search), ov=qs.get('ab');
-  if(ov==='reset'){ stored={}; }
-  else if(ov){ ov.split(',').forEach(function(p){ var b=p.split(':'); if(b.length===2) stored[b[0].trim()]=b[1].trim(); }); }
-  function pick(v){ var n=Object.keys(v),t=0,i;
-    for(i=0;i<n.length;i++) t+=Number(v[n[i]])||0;
-    if(t<=0) return n[0];
-    var r=Math.random()*t;
-    for(i=0;i<n.length;i++){ r-=Number(v[n[i]])||0; if(r<=0) return n[i]; }
-    return n[n.length-1]; }
-  var active={}, hide=[];
-  Object.keys(registry).forEach(function(id){
-    var e=registry[id]||{}, v=e.variants||{}, n=Object.keys(v);
-    if(!n.length) return;
-    var control=n[0];
-    if(e.enabled===false){
-      active[id]=null; root.setAttribute('data-ab-'+id,control);
-      n.forEach(function(x){ if(x!==control) hide.push('[data-ab="'+id+':'+x+'"]'); });
-      return; }
-    var a=stored[id];
-    if(!a){ var tr=e.traffic==null?100:Number(e.traffic);
-      a = (Math.random()*100>=tr) ? '__holdout__' : pick(v);
-      stored[id]=a; }
-    var shown = a==='__holdout__' ? control : a;
-    active[id] = a==='__holdout__' ? null : a;
-    root.setAttribute('data-ab-'+id, shown);
-    n.forEach(function(x){ if(x!==shown) hide.push('[data-ab="'+id+':'+x+'"]'); });
-  });
-  try{ localStorage.setItem(STORE,JSON.stringify(stored)); }catch(e){}
-  try{ var flat=Object.keys(stored).map(function(k){return k+':'+stored[k];}).join('|');
-    document.cookie=COOKIE+'='+encodeURIComponent(flat)+';path=/;max-age='+(60*60*24*90)+';SameSite=Lax'; }catch(e){}
-  if(hide.length){ var st=document.createElement('style'); st.id='ab-hide';
-    st.textContent=hide.join(',')+'{display:none !important}'; document.head.appendChild(st); }
-  window.NINEBELOW_AB={ registry:registry, assignments:stored, active:active,
-    get:function(id){return active[id]||null;},
-    params:function(){ var o={},l=[];
-      Object.keys(active).forEach(function(id){ if(!active[id])return;
-        o['ab_'+id]=active[id]; l.push(id+':'+active[id]); });
-      if(l.length) o.ab_variants=l.sort().join('|');
-      return o; } };
-})();
-</script>
-
 <!-- Mirrors snippets/landing-flow.liquid — channel + webview, before paint -->
 <script>
   (function () {
@@ -246,17 +188,24 @@
       return null;
     }
 
-    /* Substring rather than exact match — a referrer is `l.instagram.com`, not
-       `instagram`, and utm_source is sometimes `tiktok_ads_manager`. Aliases of
-       two characters or fewer are excluded here: matching a bare `tt` or `fb`
-       anywhere in a string would fire on almost anything. */
+    /* Token match, not substring. A referrer is `l.instagram.com` and a source is
+       often `tiktok_ads_manager`, so exact equality is too strict — but raw
+       substring is far too loose: `meta` matches metaverse, metabase, metal and
+       metaphor, and `insta` matches instant. A campaign called
+       `metal_bottle_promo` would have been served the stripped ad landing and
+       filed under Facebook.
+
+       Splitting on non-alphanumerics and comparing whole tokens fixes both
+       ends. It also makes short aliases safe, so `ig_reel_07` now resolves —
+       under the old length guard it matched nothing at all. */
     function channelIn(text) {
       var t = norm(text);
       if (!t) return null;
+      var tokens = t.split(/[^a-z0-9]+/);
       for (var i = 0; i < CH.length; i++) {
         var a = ALIASES[CH[i]];
         for (var j = 0; j < a.length; j++) {
-          if (a[j].length > 2 && t.indexOf(a[j]) !== -1) return CH[i];
+          if (a[j] && tokens.indexOf(a[j]) !== -1) return CH[i];
         }
       }
       return null;
@@ -359,6 +308,79 @@
     };
   })();
 </script>
+
+<!-- Mirrors snippets/ab-framework.liquid — inline and blocking, before paint -->
+<script id="ab-registry" type="application/json">
+{"age_gate":{"enabled":true,"traffic":100,"variants":{"a":50,"b":50}},
+ "hero_headline":{"enabled":true,"traffic":100,"variants":{"a":50,"b":50}},
+ "hero_image":{"enabled":true,"traffic":100,"variants":{"a":50,"b":50}},
+ "hero_layout":{"enabled":false,"traffic":100,"variants":{"a":50,"b":50}},
+ "ig_strip":{"enabled":true,"traffic":100,"channel":"ig","variants":{"a":50,"b":50}}}
+</script>
+<script>
+(function(){
+  'use strict';
+  var STORE='nb_ab_v1', COOKIE='nb_ab', root=document.documentElement, registry={};
+  try{ registry=JSON.parse(document.getElementById('ab-registry').textContent)||{}; }
+  catch(e){ console.warn('[AB] bad registry JSON'); registry={}; }
+  var stored={};
+  try{ stored=JSON.parse(localStorage.getItem(STORE))||{}; }catch(e){ stored={}; }
+  var qs=new URLSearchParams(location.search), ov=qs.get('ab');
+  if(ov==='reset'){ stored={}; }
+  else if(ov){ ov.split(',').forEach(function(p){ var b=p.split(':'); if(b.length===2) stored[b[0].trim()]=b[1].trim(); }); }
+  function pick(v){ var n=Object.keys(v),t=0,i;
+    for(i=0;i<n.length;i++) t+=Number(v[n[i]])||0;
+    if(t<=0) return n[0];
+    var r=Math.random()*t;
+    for(i=0;i<n.length;i++){ r-=Number(v[n[i]])||0; if(r<=0) return n[i]; }
+    return n[n.length-1]; }
+  var active={}, hide=[];
+  Object.keys(registry).forEach(function(id){
+    var e=registry[id]||{}, v=e.variants||{}, n=Object.keys(v);
+    if(!n.length) return;
+    var control=n[0];
+    /* Mirrors the channel scoping in snippets/ab-framework.liquid. Without it an
+       experiment pinned to one platform buckets EVERYONE — and because the CSS
+       is scoped to [data-channel], the others get an impression for a variant
+       they could never see, polluting the exposure denominator. */
+    if(e.channel){
+      var want=String(e.channel).toLowerCase().split(/[,\s]+/).filter(Boolean);
+      var here=root.getAttribute('data-channel');
+      if(!here||want.indexOf(here)===-1){
+        active[id]=null; root.setAttribute('data-ab-'+id,control);
+        n.forEach(function(v){ if(v!==control) hide.push('[data-ab="'+id+':'+v+'"]'); });
+        return;
+      }
+    }
+    if(e.enabled===false){
+      active[id]=null; root.setAttribute('data-ab-'+id,control);
+      n.forEach(function(x){ if(x!==control) hide.push('[data-ab="'+id+':'+x+'"]'); });
+      return; }
+    var a=stored[id];
+    if(!a){ var tr=e.traffic==null?100:Number(e.traffic);
+      a = (Math.random()*100>=tr) ? '__holdout__' : pick(v);
+      stored[id]=a; }
+    var shown = a==='__holdout__' ? control : a;
+    active[id] = a==='__holdout__' ? null : a;
+    root.setAttribute('data-ab-'+id, shown);
+    n.forEach(function(x){ if(x!==shown) hide.push('[data-ab="'+id+':'+x+'"]'); });
+  });
+  try{ localStorage.setItem(STORE,JSON.stringify(stored)); }catch(e){}
+  try{ var flat=Object.keys(stored).map(function(k){return k+':'+stored[k];}).join('|');
+    document.cookie=COOKIE+'='+encodeURIComponent(flat)+';path=/;max-age='+(60*60*24*90)+';SameSite=Lax'; }catch(e){}
+  if(hide.length){ var st=document.createElement('style'); st.id='ab-hide';
+    st.textContent=hide.join(',')+'{display:none !important}'; document.head.appendChild(st); }
+  window.NINEBELOW_AB={ registry:registry, assignments:stored, active:active,
+    get:function(id){return active[id]||null;},
+    params:function(){ var o={},l=[];
+      Object.keys(active).forEach(function(id){ if(!active[id])return;
+        o['ab_'+id]=active[id]; l.push(id+':'+active[id]); });
+      if(l.length) o.ab_variants=l.sort().join('|');
+      return o; } };
+})();
+</script>
+
+
 
 <!-- Mirrors snippets/flow-styles.liquid -->
 <style>
