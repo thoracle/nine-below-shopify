@@ -1,0 +1,114 @@
+<!-- ============================================================
+     Preview-only scaffolding. NOT part of the theme.
+
+     Injected by tools/build-preview.mjs; it never ships to a store.
+     Everything else in preview/index.html is the Liquid theme rendered
+     exactly as Shopify would render it.
+
+     Two things live here:
+       - an in-page event log, so the funnel can be inspected without
+         opening GA4. It wraps dataLayer.push transparently and still
+         forwards to the real tag.
+       - the ?debug=1 panel that displays it.
+     ============================================================ -->
+<style>
+  .evpanel{
+    position:fixed;right:12px;bottom:12px;z-index:400;
+    width:min(340px,calc(100vw - 24px));
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;
+    background:rgba(10,9,9,.95);border:1px solid var(--cream-16);border-radius:6px;
+    color:var(--cream);backdrop-filter:blur(10px);box-shadow:0 16px 44px rgba(0,0,0,.55);
+  }
+  .evpanel__head{
+    display:flex;align-items:center;gap:8px;padding:8px 10px;
+    border-bottom:1px solid var(--cream-16);cursor:pointer;
+  }
+  .evpanel__dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex:none}
+  .evpanel__title{font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:10px}
+  .evpanel__count{margin-left:auto;color:var(--muted)}
+  .evpanel__list{max-height:230px;overflow:auto;margin:0;padding:4px 0;list-style:none}
+  .evpanel.is-collapsed .evpanel__list,.evpanel.is-collapsed .evpanel__foot{display:none}
+  .evpanel__item{padding:5px 10px;border-bottom:1px solid rgba(242,228,193,.06);display:flex;gap:8px}
+  .evpanel__name{color:#7fd4a0;flex:none}
+  .evpanel__meta{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .evpanel__foot{padding:6px 10px;border-top:1px solid var(--cream-16);color:var(--muted);font-size:10px}
+  @media print{.evpanel{display:none}}
+  /* Keep clear of the sticky buy bar on phones */
+  @media (max-width:749px){
+    .evpanel{bottom:calc(12px + 76px)}
+    .evpanel__list{max-height:150px}
+  }
+</style>
+<script>
+  (function(){
+    var log=[]; window.NINEBELOW_EVENT_LOG=log;
+    var origPush=window.dataLayer.push.bind(window.dataLayer);
+    window.dataLayer.push=function(){
+      var args=Array.prototype.slice.call(arguments);
+      args.forEach(function(a){
+        if(a && a[0]==='event'){
+          var rec={event:a[1],params:a[2]||{},t:new Date().toISOString()};
+          log.push(rec);
+          if(console.groupCollapsed){
+            console.groupCollapsed('%c GA4 %c '+rec.event,
+              'background:#1f8ab0;color:#e8eef2;border-radius:2px','color:#1f8ab0;font-weight:600');
+            console.log(rec.params); console.groupEnd();
+          }
+          window.dispatchEvent(new CustomEvent('ninebelow:ga4',{detail:rec}));
+        }
+      });
+      return origPush.apply(null,args);
+    };
+    console.info('%c Nine Below %c reporting live to G-LD8107WMV2 as traffic_type=demo. Inspect NINEBELOW_EVENT_LOG.',
+      'background:#0d1418;color:#e8eef2;padding:2px 6px;border-radius:2px','color:#8098a6');
+  })();
+</script>
+<!--BODY-->
+<script>
+(function(){
+  var params = new URLSearchParams(location.search);
+  if (params.get('debug') !== '1') {
+    console.info(
+      '%c Nine Below %c Event inspector hidden. Add ?debug=1 to the URL to show it, ' +
+      'or inspect NINEBELOW_EVENT_LOG directly.',
+      'background:#0d1418;color:#e8eef2;padding:2px 6px;border-radius:2px',
+      'color:#8098a6'
+    );
+    return;
+  }
+
+  var panel=document.createElement('div');
+  panel.className='evpanel';
+  panel.innerHTML=
+    '<div class="evpanel__head"><span class="evpanel__dot"></span>'+
+    '<span class="evpanel__title">GA4 events</span>'+
+    '<span class="evpanel__count">0</span></div>'+
+    '<ul class="evpanel__list"></ul>'+
+    '<div class="evpanel__foot">Demo mode — nothing is sent. Click to collapse.</div>';
+  document.body.appendChild(panel);
+
+  var list=panel.querySelector('.evpanel__list');
+  var count=panel.querySelector('.evpanel__count');
+  var n=0;
+
+  panel.querySelector('.evpanel__head').addEventListener('click',function(){
+    panel.classList.toggle('is-collapsed');
+  });
+
+  window.addEventListener('ninebelow:ga4',function(e){
+    n++; count.textContent=n;
+    var keys=Object.keys(e.detail.params||{}).filter(function(k){return k!=='items'});
+    var meta=keys.slice(0,3).map(function(k){
+      var v=e.detail.params[k];
+      return k+'='+(typeof v==='object'?'{…}':String(v).slice(0,18));
+    }).join(' ');
+    var li=document.createElement('li');
+    li.className='evpanel__item';
+    li.innerHTML='<span class="evpanel__name"></span><span class="evpanel__meta"></span>';
+    li.querySelector('.evpanel__name').textContent=e.detail.event;
+    li.querySelector('.evpanel__meta').textContent=meta;
+    list.insertBefore(li,list.firstChild);
+    while(list.children.length>60) list.removeChild(list.lastChild);
+  });
+})();
+</script>

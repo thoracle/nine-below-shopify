@@ -65,12 +65,17 @@
        Overrides persist, so you can click through a whole funnel in one arm. */
     var qs = new URLSearchParams(location.search);
     var override = qs.get('ab');
+    var forced = {};
     if (override === 'reset') {
       stored = {};
     } else if (override) {
       override.split(',').forEach(function (pair) {
         var bits = pair.split(':');
-        if (bits.length === 2) stored[bits[0].trim()] = bits[1].trim();
+        if (bits.length === 2) {
+          var fid = bits[0].trim();
+          stored[fid] = bits[1].trim();
+          forced[fid] = true;
+        }
       });
     }
 
@@ -115,7 +120,13 @@
         }
       }
 
-      if (exp.enabled === false) {
+      /* A parked experiment shows everyone the control — unless this visitor
+         explicitly asked for an arm with `?ab=<id>:<variant>`. Without that
+         exception you cannot QA a variant before launching it: the arm you
+         force is silently ignored and you review the control believing it is
+         the variant. Forcing is a deliberate act on your own browser, so it
+         wins over the switch. */
+      if (exp.enabled === false && !forced[id]) {
         // Switched off: everyone sees the control, and nothing is reported.
         active[id] = null;
         root.setAttribute('data-ab-' + id, control);

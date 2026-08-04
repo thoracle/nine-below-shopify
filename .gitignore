@@ -26,3 +26,5 @@ gcp-*.json
 restart.md
 HANDOVER.md
 *.local.md
+
+# Build tooling for tools/build-preview.mjs

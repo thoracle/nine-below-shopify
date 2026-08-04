@@ -56,7 +56,7 @@
     "content_for_index": [],
     "consent_default": "granted",
     "ab_enabled": true,
-    "ab_experiments": "{\"age_gate\":{\"enabled\":true,\"traffic\":100,\"variants\":{\"a\":50,\"b\":50}},\"hero_headline\":{\"enabled\":false,\"traffic\":100,\"variants\":{\"a\":50,\"b\":50}},\"hero_image\":{\"enabled\":false,\"traffic\":100,\"variants\":{\"a\":50,\"b\":50}},\"hero_layout\":{\"enabled\":false,\"traffic\":100,\"variants\":{\"a\":50,\"b\":50}},\"tt_headline\":{\"enabled\":false,\"traffic\":100,\"channel\":\"tt\",\"variants\":{\"a\":50,\"b\":50}},\"ig_strip\":{\"enabled\":false,\"traffic\":100,\"channel\":\"ig\",\"variants\":{\"a\":50,\"b\":50}}}",
+    "ab_experiments": "{\"age_gate\":{\"enabled\":true,\"traffic\":100,\"variants\":{\"a\":50,\"b\":50}},\"hero_headline\":{\"enabled\":true,\"traffic\":100,\"variants\":{\"a\":50,\"b\":50}},\"hero_image\":{\"enabled\":true,\"traffic\":100,\"variants\":{\"a\":50,\"b\":50}},\"hero_layout\":{\"enabled\":false,\"traffic\":100,\"variants\":{\"a\":50,\"b\":50}},\"tt_headline\":{\"enabled\":false,\"traffic\":100,\"channel\":\"tt\",\"variants\":{\"a\":50,\"b\":50}},\"ig_strip\":{\"enabled\":false,\"traffic\":100,\"channel\":\"ig\",\"variants\":{\"a\":50,\"b\":50}}}",
     "flow_enabled": true,
     "flow_hide_nav": true,
     "flow_hide_footer_nav": true,

@@ -1,0 +1,13 @@
+{
+  "name": "nine-below-shopify",
+  "private": true,
+  "description": "Build tooling for the theme. Shopify ignores this file.",
+  "type": "module",
+  "scripts": {
+    "build:preview": "node tools/build-preview.mjs",
+    "serve": "python3 -m http.server 8090"
+  },
+  "devDependencies": {
+    "liquidjs": "^10.0.0"
+  }
+}
