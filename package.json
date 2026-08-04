@@ -5,9 +5,12 @@
   "type": "module",
   "scripts": {
     "build:preview": "node tools/build-preview.mjs",
+    "test": "node tests/run.mjs",
+    "check": "npm run build:preview && npm test",
     "serve": "python3 -m http.server 8090"
   },
   "devDependencies": {
+    "jsdom": "^27.0.1",
     "liquidjs": "^10.0.0"
   }
 }
