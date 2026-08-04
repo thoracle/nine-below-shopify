@@ -56,7 +56,7 @@
     "content_for_index": [],
     "consent_default": "granted",
     "ab_enabled": true,
-    "ab_experiments": "{\"age_gate\":{\"enabled\":true,\"traffic\":100,\"variants\":{\"a\":50,\"b\":50}},\"hero_headline\":{\"enabled\":false,\"traffic\":100,\"variants\":{\"a\":50,\"b\":50}},\"hero_image\":{\"enabled\":false,\"traffic\":100,\"variants\":{\"a\":50,\"b\":50}},\"hero_layout\":{\"enabled\":false,\"traffic\":100,\"variants\":{\"a\":50,\"b\":50}},\"tt_headline\":{\"enabled\":false,\"traffic\":100,\"channel\":\"tt\",\"variants\":{\"a\":50,\"b\":50}}}",
+    "ab_experiments": "{\"age_gate\":{\"enabled\":true,\"traffic\":100,\"variants\":{\"a\":50,\"b\":50}},\"hero_headline\":{\"enabled\":false,\"traffic\":100,\"variants\":{\"a\":50,\"b\":50}},\"hero_image\":{\"enabled\":false,\"traffic\":100,\"variants\":{\"a\":50,\"b\":50}},\"hero_layout\":{\"enabled\":false,\"traffic\":100,\"variants\":{\"a\":50,\"b\":50}},\"tt_headline\":{\"enabled\":false,\"traffic\":100,\"channel\":\"tt\",\"variants\":{\"a\":50,\"b\":50}},\"ig_strip\":{\"enabled\":false,\"traffic\":100,\"channel\":\"ig\",\"variants\":{\"a\":50,\"b\":50}}}",
     "flow_enabled": true,
     "flow_hide_nav": true,
     "flow_hide_footer_nav": true,
@@ -74,7 +74,10 @@
     "flow_hide_sections": "tasting_notes,craft_process,serve,faq,email_capture",
     "flow_hide_sections_ig": "",
     "flow_hide_sections_tt": "",
-    "flow_hide_sections_fb": ""
+    "flow_hide_sections_fb": "",
+    "flow_hide_sections_ig_b": "tasting_notes,craft_process,serve,faq,email_capture,product_story",
+    "flow_hide_sections_tt_b": "",
+    "flow_hide_sections_fb_b": ""
   },
   "platform_customizations": {}
 }

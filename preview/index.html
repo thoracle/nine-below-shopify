@@ -47,18 +47,25 @@
   }
 
 /* Mirrors snippets/flow-styles.liquid — ad-flow section stripping.
-   An ad click is not a browse: serve is post-purchase content and
-   email_capture is a competing conversion. */
+   Arm A is selected with :not([data-ab-<id>="b"]) so an unregistered,
+   parked or held-out experiment still strips, rather than showing the
+   full site to paid traffic. */
 :root[data-flow="focus"]:not([data-channel]) [data-section-name="tasting_notes"] { display: none !important; }
 :root[data-flow="focus"]:not([data-channel]) [data-section-name="craft_process"] { display: none !important; }
 :root[data-flow="focus"]:not([data-channel]) [data-section-name="serve"] { display: none !important; }
 :root[data-flow="focus"]:not([data-channel]) [data-section-name="faq"] { display: none !important; }
 :root[data-flow="focus"]:not([data-channel]) [data-section-name="email_capture"] { display: none !important; }
-:root[data-flow="focus"][data-channel="ig"] [data-section-name="tasting_notes"] { display: none !important; }
-:root[data-flow="focus"][data-channel="ig"] [data-section-name="craft_process"] { display: none !important; }
-:root[data-flow="focus"][data-channel="ig"] [data-section-name="serve"] { display: none !important; }
-:root[data-flow="focus"][data-channel="ig"] [data-section-name="faq"] { display: none !important; }
-:root[data-flow="focus"][data-channel="ig"] [data-section-name="email_capture"] { display: none !important; }
+:root[data-flow="focus"][data-channel="ig"]:not([data-ab-ig_strip="b"]) [data-section-name="tasting_notes"] { display: none !important; }
+:root[data-flow="focus"][data-channel="ig"]:not([data-ab-ig_strip="b"]) [data-section-name="craft_process"] { display: none !important; }
+:root[data-flow="focus"][data-channel="ig"]:not([data-ab-ig_strip="b"]) [data-section-name="serve"] { display: none !important; }
+:root[data-flow="focus"][data-channel="ig"]:not([data-ab-ig_strip="b"]) [data-section-name="faq"] { display: none !important; }
+:root[data-flow="focus"][data-channel="ig"]:not([data-ab-ig_strip="b"]) [data-section-name="email_capture"] { display: none !important; }
+:root[data-flow="focus"][data-channel="ig"][data-ab-ig_strip="b"] [data-section-name="tasting_notes"] { display: none !important; }
+:root[data-flow="focus"][data-channel="ig"][data-ab-ig_strip="b"] [data-section-name="craft_process"] { display: none !important; }
+:root[data-flow="focus"][data-channel="ig"][data-ab-ig_strip="b"] [data-section-name="serve"] { display: none !important; }
+:root[data-flow="focus"][data-channel="ig"][data-ab-ig_strip="b"] [data-section-name="faq"] { display: none !important; }
+:root[data-flow="focus"][data-channel="ig"][data-ab-ig_strip="b"] [data-section-name="email_capture"] { display: none !important; }
+:root[data-flow="focus"][data-channel="ig"][data-ab-ig_strip="b"] [data-section-name="product_story"] { display: none !important; }
 :root[data-flow="focus"][data-channel="tt"] [data-section-name="tasting_notes"] { display: none !important; }
 :root[data-flow="focus"][data-channel="tt"] [data-section-name="craft_process"] { display: none !important; }
 :root[data-flow="focus"][data-channel="tt"] [data-section-name="serve"] { display: none !important; }
@@ -159,7 +166,8 @@
 {"age_gate":{"enabled":true,"traffic":100,"variants":{"a":50,"b":50}},
  "hero_headline":{"enabled":true,"traffic":100,"variants":{"a":50,"b":50}},
  "hero_image":{"enabled":true,"traffic":100,"variants":{"a":50,"b":50}},
- "hero_layout":{"enabled":false,"traffic":100,"variants":{"a":50,"b":50}}}
+ "hero_layout":{"enabled":false,"traffic":100,"variants":{"a":50,"b":50}},
+ "ig_strip":{"enabled":true,"traffic":100,"channel":"ig","variants":{"a":50,"b":50}}}
 </script>
 <script>
 (function(){

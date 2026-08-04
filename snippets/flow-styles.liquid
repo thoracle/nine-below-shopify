@@ -66,29 +66,24 @@
     (the offer), the product story (why it is different, plus a second buy
     button), and social proof (credibility).
 
-    Driven by settings rather than hardcoded, because this is exactly the sort
-    of judgement that should be settled by a test rather than by an opinion —
-    including mine.
+    HOW FAR TO STRIP IS ITSELF TESTABLE. Fill in a channel's "arm B" list and
+    register an experiment named `<channel>_strip` scoped to that channel, and
+    the two lists become the two arms. Leave arm B blank and the channel just
+    uses its single list, with no experiment overhead.
 
-    The rules are emitted per channel state rather than as a blanket rule plus
-    overrides, because un-hiding would need `display: revert`, which throws away
-    whatever display value the section actually wanted.
+    The arm-A selector is `:not([data-ab-<id>="b"])` rather than `="a"`, which
+    matters: with the experiment unregistered, parked, or held out, the
+    attribute is absent and `="a"` would match nothing — so a paid visitor
+    would see the FULL site. Negating arm B fails toward the strip instead.
+
+    Rules are emitted per state rather than as a blanket rule plus overrides,
+    because un-hiding would need `display: revert`, which throws away whatever
+    display value the section actually wanted.
   {%- endcomment -%}
 
   {%- liquid
     assign strip_base = settings.flow_hide_sections | default: ''
-    assign strip_ig = settings.flow_hide_sections_ig | default: ''
-    assign strip_tt = settings.flow_hide_sections_tt | default: ''
-    assign strip_fb = settings.flow_hide_sections_fb | default: ''
-    if strip_ig == blank
-      assign strip_ig = strip_base
-    endif
-    if strip_tt == blank
-      assign strip_tt = strip_base
-    endif
-    if strip_fb == blank
-      assign strip_fb = strip_base
-    endif
+    assign channels = 'ig,tt,fb' | split: ','
   -%}
 
   {%- comment -%} Focus traffic with no channel resolved. {%- endcomment -%}
@@ -100,19 +95,46 @@
     {%- endif -%}
   {%- endfor -%}
 
-  {%- assign channels = 'ig,tt,fb' | split: ',' -%}
   {%- for ch in channels -%}
-    {%- case ch -%}
-      {%- when 'ig' -%}{%- assign list = strip_ig | split: ',' -%}
-      {%- when 'tt' -%}{%- assign list = strip_tt | split: ',' -%}
-      {%- when 'fb' -%}{%- assign list = strip_fb | split: ',' -%}
-    {%- endcase -%}
-    {%- for name in list -%}
-      {%- assign n = name | strip -%}
-      {%- if n != blank -%}
+    {%- liquid
+      assign key_a = 'flow_hide_sections_' | append: ch
+      assign key_b = key_a | append: '_b'
+      assign list_a = settings[key_a] | default: ''
+      assign list_b = settings[key_b] | default: ''
+      if list_a == blank
+        assign list_a = strip_base
+      endif
+      assign exp_id = ch | append: '_strip'
+    -%}
+
+    {%- if list_b == blank -%}
+      {%- comment -%} No test on this channel — one list, one rule set. {%- endcomment -%}
+      {%- assign items = list_a | split: ',' -%}
+      {%- for name in items -%}
+        {%- assign n = name | strip -%}
+        {%- if n != blank -%}
   :root[data-flow="focus"][data-channel="{{ ch }}"] [data-section-name="{{ n }}"] { display: none !important; }
-      {%- endif -%}
-    {%- endfor -%}
+        {%- endif -%}
+      {%- endfor -%}
+    {%- else -%}
+      {%- comment -%}
+        Arm A also covers "no experiment running", via the negation above.
+      {%- endcomment -%}
+      {%- assign items = list_a | split: ',' -%}
+      {%- for name in items -%}
+        {%- assign n = name | strip -%}
+        {%- if n != blank -%}
+  :root[data-flow="focus"][data-channel="{{ ch }}"]:not([data-ab-{{ exp_id }}="b"]) [data-section-name="{{ n }}"] { display: none !important; }
+        {%- endif -%}
+      {%- endfor -%}
+      {%- assign items = list_b | split: ',' -%}
+      {%- for name in items -%}
+        {%- assign n = name | strip -%}
+        {%- if n != blank -%}
+  :root[data-flow="focus"][data-channel="{{ ch }}"][data-ab-{{ exp_id }}="b"] [data-section-name="{{ n }}"] { display: none !important; }
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endif -%}
   {%- endfor -%}
 
   /* ---- per channel ----------------------------------------------------

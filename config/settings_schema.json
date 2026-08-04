@@ -552,6 +552,27 @@
         "info": "Facebook skews older and more considered, and buys with more deliberation — a lighter strip that keeps faq may well win here. Worth testing rather than assuming."
       },
       {
+        "type": "text",
+        "id": "flow_hide_sections_ig_b",
+        "label": "Instagram — arm B",
+        "default": "tasting_notes,craft_process,serve,faq,email_capture,product_story",
+        "info": "Fill this in and register an experiment named ig_strip scoped to channel ig, and the two lists become the two arms. Blank means no test."
+      },
+      {
+        "type": "text",
+        "id": "flow_hide_sections_tt_b",
+        "label": "TikTok — arm B",
+        "default": "",
+        "info": "Same mechanism, experiment id tt_strip."
+      },
+      {
+        "type": "text",
+        "id": "flow_hide_sections_fb_b",
+        "label": "Facebook — arm B",
+        "default": "",
+        "info": "Same mechanism, experiment id fb_strip. Facebook is the likeliest to want a LIGHTER strip — try dropping faq from the list rather than adding to it."
+      },
+      {
         "type": "header",
         "content": "QA"
       },
