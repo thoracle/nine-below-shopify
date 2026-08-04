@@ -77,11 +77,15 @@
 
 <link rel="stylesheet" href="../assets/theme.css">
 
-<!-- Mirrors snippets/analytics-head.liquid in placeholder (demo) mode -->
+<!-- Mirrors snippets/analytics-head.liquid with a LIVE measurement ID.
+     The mirror previously baked in the placeholder branch, so it never requested
+     gtag.js at all — events were logged locally and went nowhere, whatever the
+     theme-config JSON below said. -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LD8107WMV2"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){ dataLayer.push(arguments); }
-  window.NINEBELOW_ANALYTICS_DEMO = true;
+  window.NINEBELOW_ANALYTICS_DEMO = false;
   /* US-only store: opt-out regime, so measurement may run until a visitor
      opts out. Switch to 'denied' before selling into the EEA/UK. */
   gtag('consent','default',{
@@ -92,6 +96,15 @@
   gtag('set','ads_data_redaction',false);
   gtag('set','url_passthrough',true);
   gtag('js', new Date());
+  gtag('config', 'G-LD8107WMV2', {
+    send_page_view: true,
+    currency: 'USD',
+    /* Public demo on a live property. GA4's internal-traffic filter keys
+       off this exact parameter, so these events stay excludable. */
+    traffic_type: 'demo',
+    /* Routes to DebugView. Turn off once verified. */
+    debug_mode: true
+  });
 
   (function(){
     var log=[]; window.NINEBELOW_EVENT_LOG=log;
@@ -112,7 +125,7 @@
       });
       return origPush.apply(null,args);
     };
-    console.info('%c Nine Below %c analytics demo mode — no data is sent. Inspect NINEBELOW_EVENT_LOG.',
+    console.info('%c Nine Below %c reporting live to G-LD8107WMV2 as traffic_type=demo. Inspect NINEBELOW_EVENT_LOG.',
       'background:#0d1418;color:#e8eef2;padding:2px 6px;border-radius:2px','color:#8098a6');
   })();
 </script>
