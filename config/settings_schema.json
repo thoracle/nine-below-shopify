@@ -349,6 +349,13 @@
         "info": "Sends debug_mode so events appear in GA4 DebugView. Turn off in production."
       },
       {
+        "type": "text",
+        "id": "ga4_traffic_type",
+        "label": "Traffic label",
+        "default": "",
+        "info": "Tags this build's events so they can be filtered out in GA4 (Admin → Data streams → Configure tag settings → Define internal traffic). Use 'demo' or 'staging'. Leave blank on the live store."
+      },
+      {
         "type": "checkbox",
         "id": "consent_mode",
         "label": "Enable Consent Mode v2",

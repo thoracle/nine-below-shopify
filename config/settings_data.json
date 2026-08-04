@@ -31,7 +31,7 @@
     "age_gate_heading": "You must be at least 21 to purchase alcohol",
     "age_gate_deny_text": "You're not old enough to view this content.",
     "ga4_enabled": true,
-    "ga4_measurement_id": "G-XXXXXXXXXX",
+    "ga4_measurement_id": "G-LD8107WMV2",
     "ga4_debug": true,
     "consent_mode": true,
     "track_scroll_depth": true,
@@ -69,7 +69,8 @@
     "age_gate_dob_invalid": "Please enter a valid birthdate.",
     "flow_channel_ig": "instagram,ig,insta,igshopping",
     "flow_channel_tt": "tiktok,tt,tiktokads,bytedance",
-    "flow_channel_fb": "facebook,fb,meta,messenger,audience_network"
+    "flow_channel_fb": "facebook,fb,meta,messenger,audience_network",
+    "ga4_traffic_type": "demo"
   },
   "platform_customizations": {}
 }

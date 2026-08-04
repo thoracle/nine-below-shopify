@@ -99,6 +99,14 @@
     gtag('config', {{ ga_id | json }}, {
       'send_page_view': true,
       'currency': {{ settings.product_currency | json }}
+      {%- if settings.ga4_traffic_type != blank %},
+      /* Marks this build's traffic so it can be excluded in GA4 under
+         Admin -> Data streams -> Configure tag settings -> Define internal
+         traffic. Set on demo and staging builds; leave blank on production.
+         Labelling has to happen at collection time — events that arrive
+         unmarked can never be separated out afterwards. */
+      'traffic_type': {{ settings.ga4_traffic_type | json }}
+      {%- endif -%}
       {%- if settings.ga4_debug %}, 'debug_mode': true{% endif -%}
     });
   </script>
