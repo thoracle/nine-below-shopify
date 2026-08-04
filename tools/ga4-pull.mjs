@@ -107,11 +107,11 @@ const since = args.since || `${Number(args.days)}daysAgo`;
 
 const ENDPOINT = `https://analyticsdata.googleapis.com/v1beta/properties/${args.property}:runReport`;
 
-async function runReport(eventName, dimensions) {
+async function runReport(eventName, dimensions, metrics = ['totalUsers']) {
   const body = {
     dateRanges: [{ startDate: since, endDate: until }],
     dimensions: dimensions.map(name => ({ name })),
-    metrics: [{ name: 'totalUsers' }],
+    metrics: metrics.map(name => ({ name })),
     dimensionFilter: {
       filter: { fieldName: 'eventName', stringFilter: { matchType: 'EXACT', value: eventName } }
     },
@@ -127,7 +127,7 @@ const conversions = {};
 function bump(into, id, arm, field, n) {
   if (!id || !arm || arm === '(not set)') return;
   into[id] ??= {};
-  into[id][arm] ??= { exposures: 0, conversions: 0 };
+  into[id][arm] ??= { exposures: 0, conversions: 0, revenue: 0 };
   into[id][arm][field] += n;
 }
 
@@ -155,10 +155,40 @@ function tallyConversions(rows) {
   }
 }
 
+/* Revenue, for tests where the arms are priced differently.
+
+   `eventValue` is the sum of the `value` parameter, so this is real money over
+   the same rows the conversions came from — not users. It is summed rather than
+   counted for the same reason conversions are counted by user: a price test is
+   decided on revenue per visitor, and at three times the price an arm can
+   convert far worse and still be worth more. Without this the results view can
+   only offer a conversion-rate verdict, which for `bundle_offer` is the wrong
+   question.
+
+   Left at zero when the metric is absent. Zero revenue reads as "not measured"
+   in the results view, which is honest; a fabricated number would not be. */
+function tallyRevenue(rows) {
+  for (const row of rows) {
+    const label = row.dimensionValues?.[0]?.value || '';
+    const value = Number(row.metricValues?.[1]?.value || 0);
+    if (!label || label === '(not set)' || !value) continue;
+    for (const part of label.split('|')) {
+      const [id, arm] = part.split(':');
+      bump(conversions, id, arm, 'revenue', value);
+    }
+  }
+}
+
 try {
   tallyExposures(await runReport('experiment_impression',
     ['customEvent:experiment_id', 'customEvent:variant_id']));
-  tallyConversions(await runReport(args.metric, ['customEvent:ab_variants']));
+  /* One request, two metrics. Asking twice would be two chances for the row
+     sets to differ — a conversion counted against revenue that is not there, or
+     the reverse — and reconciling that afterwards is guesswork. */
+  const convRows = await runReport(args.metric, ['customEvent:ab_variants'],
+                                   ['totalUsers', 'eventValue']);
+  tallyConversions(convRows);
+  tallyRevenue(convRows);
 } catch (e) {
   const msg = e?.response?.data?.error?.message || e.message;
   console.error(`GA4 request failed: ${msg}`);
@@ -197,7 +227,8 @@ const experiments = Object.keys(exposures).sort().map(id => {
       // that is not a straight split, or the guardrail will cry wolf.
       weight: declared ? (declared[i] ?? 0) : Math.round(100 / arms.length),
       exposures: exposures[id][name].exposures,
-      conversions: conversions[id]?.[name]?.conversions || 0
+      conversions: conversions[id]?.[name]?.conversions || 0,
+      revenue: Math.round((conversions[id]?.[name]?.revenue || 0) * 100) / 100
     }))
   };
 });
