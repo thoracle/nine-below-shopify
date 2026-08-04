@@ -18,3 +18,11 @@ gcp-*.json
 
 # Local GA4 pulls
 *.pull.json
+
+# Local-only handover notes. restart.md lives in the PARENT folder, outside both
+# repos, because it references the other brand and this repo must stay free of
+# any cross-reference. This rule is insurance: if a copy ever lands in here, it
+# does not get committed.
+restart.md
+HANDOVER.md
+*.local.md
