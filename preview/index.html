@@ -626,7 +626,16 @@
   .evpanel__title{font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:10px}
   .evpanel__count{margin-left:auto;color:var(--muted)}
   .evpanel__list{max-height:230px;overflow:auto;margin:0;padding:4px 0;list-style:none}
-  .evpanel.is-collapsed .evpanel__list,.evpanel.is-collapsed .evpanel__foot{display:none}
+  .evpanel.is-collapsed .evpanel__list,.evpanel.is-collapsed .evpanel__foot,
+  .evpanel.is-collapsed .evpanel__state{display:none}
+  /* The state block sits above the fold of the panel on a phone, because it is
+     the part a device pass actually reads. */
+  .evpanel__state{padding:6px 10px;border-top:1px solid var(--cream-16);
+    display:grid;grid-template-columns:auto 1fr;gap:1px 10px;font-size:10px}
+  .evpanel__srow{display:contents}
+  .evpanel__skey{color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+  .evpanel__sval{color:var(--cream);word-break:break-all}
+  .evpanel__sval[data-warn="1"]{color:#ff6b60;font-weight:700}
   .evpanel__item{padding:5px 10px;border-bottom:1px solid rgba(242,228,193,.06);display:flex;gap:8px}
   .evpanel__name{color:#7fd4a0;flex:none}
   .evpanel__meta{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -1531,8 +1540,74 @@
     '<span class="evpanel__title">GA4 events</span>'+
     '<span class="evpanel__count">0</span></div>'+
     '<ul class="evpanel__list"></ul>'+
-    '<div class="evpanel__foot">Demo mode — nothing is sent. Click to collapse.</div>';
+    '<div class="evpanel__state" id="nb-state"></div>'+
+    '<div class="evpanel__foot">Cart is mocked; GA4 is live. Tap the header to collapse.</div>';
   document.body.appendChild(panel);
+
+  /* ---------------------------------------------------------------------
+     On-device state readout.
+
+     The event list alone is not enough to test on a phone: it shows the first
+     three params of each event, which may or may not include the three things a
+     device pass actually has to confirm — which channel was resolved, whether
+     the in-app browser was detected, and which arm was assigned. There is no
+     devtools on a phone, so if it is not on screen it cannot be checked.
+
+     `visits` is the important one. In-app browsers may partition or clear
+     storage between sessions. If they do, every visit re-buckets the visitor,
+     one person can see arm A then arm B, and every result the framework
+     produces is meaningless. A counter that resets to 1 on a repeat visit is
+     that failure, visible instantly and without tooling.
+     --------------------------------------------------------------------- */
+  var VISIT_KEY = 'nb_diag_visits';
+  var visits = 0, storageOk = true;
+  try {
+    visits = (parseInt(localStorage.getItem(VISIT_KEY), 10) || 0) + 1;
+    localStorage.setItem(VISIT_KEY, String(visits));
+    if (localStorage.getItem(VISIT_KEY) !== String(visits)) storageOk = false;
+  } catch (e) { storageOk = false; }
+
+  function renderState(){
+    var root = document.documentElement;
+    var ab = window.NINEBELOW_AB || {};
+    var flow = window.NINEBELOW_FLOW || {};
+    var arms = Object.keys(ab.active || {})
+      .filter(function(k){ return ab.active[k]; })
+      .map(function(k){ return k + ':' + ab.active[k]; }).join(' ') || '(none)';
+    var stored = [];
+    try {
+      ['nb_ab_v1','nb_age_ok','nb_utm','nb_consent_v2','nb_flow'].forEach(function(k){
+        if (localStorage.getItem(k) !== null) stored.push(k.replace('nb_',''));
+      });
+    } catch (e) { stored = ['<blocked>']; }
+
+    var rows = [
+      ['channel',  root.getAttribute('data-channel') || '(none)'],
+      ['webview',  root.getAttribute('data-webview') || 'no'],
+      ['in-app',   flow.inApp ? 'yes' : 'no'],
+      ['flow',     root.getAttribute('data-flow') || '(none)'],
+      ['age',      root.getAttribute('data-age') || 'gated'],
+      ['arms',     arms],
+      ['visits',   storageOk ? String(visits) : 'STORAGE BLOCKED'],
+      ['kept',     stored.join(' ') || '(nothing persisted)']
+    ];
+    var el = document.getElementById('nb-state');
+    if (!el) return;
+    el.textContent = '';
+    rows.forEach(function(r){
+      var d = document.createElement('div');
+      d.className = 'evpanel__srow';
+      var k = document.createElement('span'); k.className='evpanel__skey'; k.textContent = r[0];
+      var v = document.createElement('span'); v.className='evpanel__sval'; v.textContent = r[1];
+      /* Only a genuine storage failure is flagged. Flagging visits === 1 would
+         fire on every real first visit, and an indicator that cries wolf on the
+         happy path is one the tester stops reading. What matters is whether the
+         number GOES UP on reload — which the page cannot know, so the test
+         script asks for it instead. */
+      if (r[0] === 'visits' && !storageOk) v.dataset.warn = '1';
+      d.appendChild(k); d.appendChild(v); el.appendChild(d);
+    });
+  }
 
   var list=panel.querySelector('.evpanel__list');
   var count=panel.querySelector('.evpanel__count');
@@ -1542,8 +1617,12 @@
     panel.classList.toggle('is-collapsed');
   });
 
+  renderState();
+  setInterval(renderState, 1500);   // the gate and the arms settle after load
+
   window.addEventListener('ninebelow:ga4',function(e){
     n++; count.textContent=n;
+    renderState();
     var keys=Object.keys(e.detail.params||{}).filter(function(k){return k!=='items'});
     var meta=keys.slice(0,3).map(function(k){
       var v=e.detail.params[k];
