@@ -1,0 +1,172 @@
+{%- comment -%}
+  Limited edition bundle offer.
+
+  This section IS the B arm of the `bundle_offer` experiment. It is not shown by
+  a JS toggle after paint — it is hidden by a fail-closed CSS rule in theme.css:
+
+      :root:not([data-ab-bundle_offer="b"]) [data-section-name="bundle"]
+
+  Positive match, not negation. If the experiment is unregistered, parked, held
+  out, or the A/B framework never runs at all, the attribute is absent and the
+  section stays hidden. The opposite polarity would leak a $199.99 offer to
+  every visitor the moment anything upstream failed.
+
+  Pricing is stated, never computed from a percentage. `save` is rendered from
+  the two prices so the arithmetic on the page cannot drift from the arithmetic
+  in the settings — but the two prices themselves are typed in by a person, and
+  the discount claim in `claim` is theirs to stand behind.
+{%- endcomment -%}
+
+{%- liquid
+  assign cur = settings.product_currency | replace: 'USD', '$'
+  assign retail = section.settings.retail_price | plus: 0.0
+  assign bundle = section.settings.bundle_price | plus: 0.0
+  assign save = retail | minus: bundle
+-%}
+
+<section class="section section--bundle"
+         id="{{ section.settings.anchor | default: 'bundle' }}"
+         data-section-name="bundle">
+  <div class="wrap">
+    <div class="bundle">
+
+      <div class="bundle__media">
+        {%- if section.settings.image != blank -%}
+          <img src="{{ section.settings.image | image_url: width: 900 }}"
+               alt="{{ section.settings.image_alt | escape }}"
+               width="900" height="1158" loading="lazy" decoding="async">
+        {%- else -%}
+          <img src="{{ 'bundle-bottles.webp' | asset_url }}"
+               srcset="{{ 'bundle-600.webp' | asset_url }} 600w,
+                       {{ 'bundle-bottles.webp' | asset_url }} 900w"
+               sizes="(min-width: 900px) 44vw, 92vw"
+               alt="{{ section.settings.image_alt | escape }}"
+               width="900" height="1158" loading="lazy" decoding="async">
+        {%- endif -%}
+      </div>
+
+      <div class="bundle__body">
+        {%- if section.settings.eyebrow != blank -%}
+          <p class="eyebrow eyebrow--accent">{{ section.settings.eyebrow }}</p>
+        {%- endif -%}
+
+        {%- if section.settings.heading != blank -%}
+          <h2 class="h2 bundle__heading">{{ section.settings.heading }}</h2>
+        {%- endif -%}
+
+        {%- if section.settings.body != blank -%}
+          <div class="bundle__intro rte">{{ section.settings.body }}</div>
+        {%- endif -%}
+
+        {%- if section.blocks.size > 0 -%}
+          <ul class="bundle__contents" role="list">
+            {%- for block in section.blocks -%}
+              <li class="bundle__item" {{ block.shopify_attributes }}>
+                {%- if block.settings.image != blank -%}
+                  <img class="bundle__thumb"
+                       src="{{ block.settings.image | image_url: width: 260 }}"
+                       alt="" width="130" height="130" loading="lazy" decoding="async">
+                {%- elsif block.settings.fallback != blank -%}
+                  <img class="bundle__thumb"
+                       src="{{ block.settings.fallback | asset_url }}"
+                       alt="" width="130" height="130" loading="lazy" decoding="async">
+                {%- endif -%}
+                <div class="bundle__itemtext">
+                  <span class="bundle__itemname">{{ block.settings.label }}</span>
+                  {%- if block.settings.detail != blank -%}
+                    <span class="bundle__itemdetail">{{ block.settings.detail }}</span>
+                  {%- endif -%}
+                </div>
+              </li>
+            {%- endfor -%}
+          </ul>
+        {%- endif -%}
+
+        <div class="bundle__pricing">
+          <p class="bundle__price">
+            <span class="bundle__now">{{ cur }}{{ section.settings.bundle_price }}</span>
+            {%- if retail > bundle -%}
+              <s class="bundle__was">
+                <span class="visually-hidden">Regular price </span>{{ cur }}{{ section.settings.retail_price }}
+              </s>
+            {%- endif -%}
+          </p>
+          {%- if retail > bundle -%}
+            <p class="bundle__save">
+              Save {{ cur }}{{ save | round: 2 }}
+              {%- if section.settings.claim != blank -%}
+                <span class="bundle__claim">{{ section.settings.claim }}</span>
+              {%- endif -%}
+            </p>
+          {%- endif -%}
+        </div>
+
+        {%- comment -%}
+          `offer: 'bundle'` is what separates this click from the single-bottle
+          buy button in reporting, in the cart, and in the tag handed to
+          BottleNexus. Without it the two arms would post identical events and
+          the experiment would be unreadable.
+        {%- endcomment -%}
+        {% render 'buy-button',
+             location: 'bundle',
+             size: 'lg',
+             full: true,
+             offer: 'bundle',
+             label: section.settings.cta_label,
+             price: section.settings.bundle_price %}
+
+        {%- if section.settings.note != blank -%}
+          <p class="bundle__note">{{ section.settings.note }}</p>
+        {%- endif -%}
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Bundle offer",
+  "tag": "section",
+  "settings": [
+    { "type": "text", "id": "anchor", "label": "Anchor ID", "default": "bundle" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Limited edition" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "The complete Nine Below set" },
+    { "type": "richtext", "id": "body", "label": "Intro" },
+    {
+      "type": "header",
+      "content": "Pricing",
+      "info": "Both prices are typed in and are yours to stand behind. The saving shown on the page is calculated from them, so the page can never disagree with itself."
+    },
+    { "type": "text", "id": "bundle_price", "label": "Bundle price", "default": "199.99" },
+    { "type": "text", "id": "retail_price", "label": "Combined retail price", "default": "262.95" },
+    {
+      "type": "text",
+      "id": "claim",
+      "label": "Discount claim",
+      "default": "30% off the vodka — tee and cap included at full price",
+      "info": "Must be true against the two prices above. Check it whenever either price changes."
+    },
+    { "type": "text", "id": "cta_label", "label": "Button label", "default": "Get the bundle" },
+    { "type": "text", "id": "note", "label": "Note under the button" },
+    { "type": "header", "content": "Image" },
+    { "type": "image_picker", "id": "image", "label": "Bundle image" },
+    { "type": "text", "id": "image_alt", "label": "Image alt text",
+      "default": "Three Nine Below Winter Wheat bottles" }
+  ],
+  "blocks": [
+    {
+      "type": "item",
+      "name": "Contents item",
+      "settings": [
+        { "type": "text", "id": "label", "label": "Name" },
+        { "type": "text", "id": "detail", "label": "Detail" },
+        { "type": "image_picker", "id": "image", "label": "Thumbnail" },
+        { "type": "text", "id": "fallback", "label": "Bundled asset filename",
+          "info": "Used only when no thumbnail is uploaded." }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Bundle offer" }]
+}
+{% endschema %}

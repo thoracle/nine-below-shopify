@@ -7,6 +7,12 @@
                 actually earns the click.
     size      — 'lg' | 'md' | 'sm'
     full      — true to stretch to container width
+    offer     — 'single' (default) or 'bundle'. Rides through to the cart, to
+                every ecommerce event, and into the tag handed to BottleNexus.
+                Two offers at two prices posting the same events would make the
+                bundle experiment unreadable.
+    label     — button text override (defaults to the theme setting)
+    price     — price override (defaults to the single-bottle setting)
 
   The visible button is rendered by the theme, not by the vendor script. The
   live site swaps a greyed-out preloader for a vendor-rendered button once
@@ -19,22 +25,27 @@
   assign loc  = location | default: 'hero'
   assign size = size | default: 'lg'
   assign is_full = full | default: false
+  assign offer_id = offer | default: 'single'
+  assign btn_label = label | default: settings.bn_button_text
+  assign btn_price = price | default: settings.product_price
 -%}
 
 <div class="buybtn buybtn--{{ size }}{% if is_full %} buybtn--full{% endif %}"
      data-buy-root
+     data-offer="{{ offer_id }}"
      data-location="{{ loc }}">
 
   <button type="button"
           class="btn btn--primary buybtn__btn"
           data-buy-trigger
+          data-offer="{{ offer_id }}"
           data-location="{{ loc }}"
-          aria-label="{{ settings.bn_button_text | escape }} — {{ settings.product_name | escape }}">
-    <span class="buybtn__label">{{ settings.bn_button_text }}</span>
-    {%- if settings.product_price != blank -%}
+          aria-label="{{ btn_label | escape }} — {{ settings.product_name | escape }}">
+    <span class="buybtn__label">{{ btn_label }}</span>
+    {%- if btn_price != blank -%}
       <span class="buybtn__sep" aria-hidden="true">·</span>
       <span class="buybtn__price">
-        {{ settings.product_currency | replace: 'USD', '$' }}{{ settings.product_price }}
+        {{ settings.product_currency | replace: 'USD', '$' }}{{ btn_price }}
       </span>
     {%- endif -%}
     <span class="buybtn__spinner" aria-hidden="true"></span>

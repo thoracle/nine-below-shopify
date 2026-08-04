@@ -39,8 +39,76 @@
     ready: false,
     quantity: 0,
     cartOpen: false,
-    lastLocation: 'hero'
+    lastLocation: 'hero',
+    // Which offer the visitor actually clicked. Set from the button's
+    // data-offer at click time, never inferred from the experiment arm — a
+    // visitor in arm B can still buy a single bottle from the hero, and
+    // reporting that as a bundle purchase would overstate the arm.
+    offer: 'single'
   };
+
+  /* =====================================================================
+     Offers
+
+     The bundle is a different item at a different price, not a quantity of the
+     same one. Everything downstream — item_id, value, the cart, the handoff
+     tag — has to reflect that, or the two arms of `bundle_offer` post
+     identical events and the experiment cannot be read.
+     ===================================================================== */
+
+  var BUNDLE = CFG.bundle || {};
+
+  function offerInfo(id) {
+    if (id === 'bundle' && BUNDLE.enabled) {
+      var p = parseFloat(BUNDLE.price);
+      return {
+        id: 'bundle',
+        name: BUNDLE.name || 'Nine Below — Limited Edition Bundle',
+        sku: BUNDLE.sku || 'NB-BUNDLE-LE',
+        price: isNaN(p) ? undefined : p,
+        productId: BUNDLE.productId || BN.productId
+      };
+    }
+    return {
+      id: 'single',
+      name: PRODUCT.name,
+      sku: PRODUCT.sku,
+      price: parseFloat(PRODUCT.price),
+      productId: BN.productId
+    };
+  }
+
+  /* Merged into every ecommerce call so the item and the value always agree
+     with each other and with what the visitor was shown. */
+  function offerPayload(qty) {
+    var o = offerInfo(state.offer);
+    var out = {
+      offer_type: o.id,
+      item: { item_id: o.sku, item_name: o.name, quantity: qty }
+    };
+    if (o.price !== undefined && !isNaN(o.price)) {
+      out.item.price = o.price;
+      out.value = o.price * qty;
+    }
+    if (o.id === 'bundle') out.item.item_category = 'Bundle';
+    return out;
+  }
+
+  function merged(qty, extra) {
+    var base = offerPayload(qty);
+    base.quantity = qty;
+    for (var k in extra) {
+      if (!extra.hasOwnProperty(k)) continue;
+      if (k === 'item') {
+        for (var j in extra.item) {
+          if (extra.item.hasOwnProperty(j)) base.item[j] = extra.item[j];
+        }
+      } else {
+        base[k] = extra[k];
+      }
+    }
+    return base;
+  }
 
   /* =====================================================================
      Campaign context — the bridge between GA4 and BottleNexus
@@ -98,9 +166,14 @@
     return f && f.mode ? 'flow-' + f.mode : '';
   }
 
+  function offerTag() {
+    return state.offer && state.offer !== 'single' ? 'offer-' + state.offer : '';
+  }
+
   function campaignContext() {
     var p = landingParams();
-    var content = [p.utm_content, armTag(), flowTag()].filter(Boolean).join('__');
+    var content = [p.utm_content, armTag(), flowTag(), offerTag()]
+      .filter(Boolean).join('__');
 
     var utm = {
       source: p.utm_source || 'ninebelow_site',
@@ -119,32 +192,23 @@
 
   function fireAddToCart(qty, location) {
     state.quantity += qty;
-    ecommerce('add_to_cart', {
-      quantity: qty,
-      item: { quantity: qty },
-      cta_location: location
-    });
+    ecommerce('add_to_cart', merged(qty, { cta_location: location }));
   }
 
   function fireViewCart() {
     if (state.cartOpen) return;
     state.cartOpen = true;
-    ecommerce('view_cart', {
-      quantity: state.quantity || 1,
-      item: { quantity: state.quantity || 1 }
-    });
+    ecommerce('view_cart', merged(state.quantity || 1, {}));
   }
 
   function fireBeginCheckout() {
     var ctx = campaignContext();
-    ecommerce('begin_checkout', {
-      quantity: state.quantity || 1,
-      item: { quantity: state.quantity || 1 },
+    ecommerce('begin_checkout', merged(state.quantity || 1, {
       checkout_provider: 'bottlenexus',
       // Identical to the utm_content handed to BottleNexus — the join key
       // between this funnel and their order export.
       handoff_tag: ctx.tag || '(none)'
-    });
+    }));
   }
 
   /* =====================================================================
@@ -165,9 +229,11 @@
 
       var location = btn.getAttribute('data-location') || 'unknown';
       state.lastLocation = location;
+      state.offer = btn.getAttribute('data-offer') || 'single';
 
       track('buy_button_click', {
         cta_location: location,
+        offer_type: state.offer,
         provider: 'bottlenexus',
         demo_mode: !!BN.demoMode
       });
@@ -292,9 +358,11 @@
     }
   }
 
+  /* Priced from the offer the visitor clicked, not from the single-bottle
+     setting — otherwise a bundle in the cart totals $69.99. */
   function unitPrice() {
-    var p = parseFloat(PRODUCT.price);
-    return isNaN(p) ? 0 : p;
+    var p = offerInfo(state.offer).price;
+    return (p === undefined || isNaN(p)) ? 0 : p;
   }
 
   function buildCart() {
@@ -317,9 +385,8 @@
         '<div class="democart__body">' +
           '<div class="democart__line">' +
             '<div class="democart__info">' +
-              '<p class="democart__name">' + (PRODUCT.name || 'Winter Wheat Vodka') + '</p>' +
-              '<p class="democart__meta">' + (PRODUCT.size || '750ml') +
-                (PRODUCT.abv ? ' · ' + PRODUCT.abv : '') + '</p>' +
+              '<p class="democart__name" data-line-name></p>' +
+              '<p class="democart__meta" data-line-meta></p>' +
             '</div>' +
             '<div class="democart__qty">' +
               '<button type="button" data-qty-dec aria-label="Decrease quantity">&minus;</button>' +
@@ -346,6 +413,15 @@
     if (!cartEl) return;
     var qty = Math.max(1, state.quantity);
     var total = unitPrice() * qty;
+    /* The cart is built once and reused, so the line has to be re-labelled on
+       every render — a visitor can add a bundle, close, and then add a single
+       bottle from the hero within the same page view. */
+    var o = offerInfo(state.offer);
+    cartEl.querySelector('[data-line-name]').textContent =
+      o.name || 'Winter Wheat Vodka';
+    cartEl.querySelector('[data-line-meta]').textContent = o.id === 'bundle'
+      ? (BUNDLE.contents || '3 × 750ml · Tee · Cap')
+      : ((PRODUCT.size || '750ml') + (PRODUCT.abv ? ' · ' + PRODUCT.abv : ''));
     cartEl.querySelector('[data-qty-value]').textContent = qty;
     cartEl.querySelector('[data-line-total]').textContent = money(total);
     cartEl.querySelector('[data-cart-total]').textContent = money(total);
@@ -377,9 +453,7 @@
       if (e.target.closest('[data-qty-inc]')) {
         state.quantity += 1;
         renderCart();
-        ecommerce('add_to_cart', {
-          quantity: 1, item: { quantity: 1 }, cta_location: 'cart-stepper'
-        });
+        ecommerce('add_to_cart', merged(1, { cta_location: 'cart-stepper' }));
         return;
       }
 
@@ -387,9 +461,7 @@
         if (state.quantity <= 1) return;
         state.quantity -= 1;
         renderCart();
-        ecommerce('remove_from_cart', {
-          quantity: 1, item: { quantity: 1 }, cta_location: 'cart-stepper'
-        });
+        ecommerce('remove_from_cart', merged(1, { cta_location: 'cart-stepper' }));
         return;
       }
 
@@ -414,6 +486,7 @@
           btn.textContent = 'Checkout';
           track('checkout_handoff_stub', {
             provider: 'bottlenexus',
+            offer_type: state.offer,
             quantity: state.quantity || 1,
             handoff_tag: ctx.tag || '(none)'
           });

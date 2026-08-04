@@ -367,10 +367,57 @@
         "success_text": "You're on the list. Watch your inbox.",
         "error_text": "Something went wrong. Please try again."
       }
+    },
+    "bundle": {
+      "type": "bundle-offer",
+      "blocks": {
+        "b1": {
+          "type": "item",
+          "settings": {
+            "label": "3 × 750ml",
+            "detail": "Winter Wheat, 40% ABV",
+            "fallback": "bundle-600.webp"
+          }
+        },
+        "b2": {
+          "type": "item",
+          "settings": {
+            "label": "Heavyweight tee",
+            "detail": "Embroidered wordmark",
+            "fallback": "bundle-tee.webp"
+          }
+        },
+        "b3": {
+          "type": "item",
+          "settings": {
+            "label": "Structured cap",
+            "detail": "Six panel, adjustable",
+            "fallback": "bundle-cap.webp"
+          }
+        }
+      },
+      "block_order": [
+        "b1",
+        "b2",
+        "b3"
+      ],
+      "settings": {
+        "anchor": "bundle",
+        "eyebrow": "Limited edition",
+        "heading": "The complete Nine Below set",
+        "body": "<p>Three bottles of the Winter Wheat, plus the tee and the cap. Bottled once a year — when this run is gone it is gone.</p>",
+        "bundle_price": "199.99",
+        "retail_price": "262.95",
+        "claim": "30% off the vodka — tee and cap included at full price",
+        "cta_label": "Get the bundle",
+        "note": "Ships as one parcel. Adult signature required on delivery.",
+        "image_alt": "Three Nine Below Winter Wheat bottles with the tee and cap"
+      }
     }
   },
   "order": [
     "hero",
+    "bundle",
     "product_story",
     "tasting",
     "craft",

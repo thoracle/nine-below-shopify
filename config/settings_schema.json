@@ -237,6 +237,55 @@
           }
         ],
         "default": "PreOrder"
+      },
+      {
+        "type": "header",
+        "content": "Limited edition bundle",
+        "info": "Powers the `bundle_offer` experiment. The bundle section stays hidden unless a visitor is enrolled in arm B, so these can be filled in before the test runs."
+      },
+      {
+        "type": "checkbox",
+        "id": "bundle_enabled",
+        "label": "Bundle offer available",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "bundle_name",
+        "label": "Bundle name",
+        "default": "Nine Below — Limited Edition Bundle"
+      },
+      {
+        "type": "text",
+        "id": "bundle_sku",
+        "label": "Bundle SKU",
+        "default": "NB-BUNDLE-LE"
+      },
+      {
+        "type": "text",
+        "id": "bundle_price",
+        "label": "Bundle price",
+        "default": "199.99",
+        "info": "Numeric only. Must match the price shown in the Bundle offer section."
+      },
+      {
+        "type": "text",
+        "id": "bundle_retail",
+        "label": "Combined retail price",
+        "default": "262.95"
+      },
+      {
+        "type": "text",
+        "id": "bundle_contents",
+        "label": "Cart line detail",
+        "default": "3 × 750ml · Tee · Cap"
+      },
+      {
+        "type": "text",
+        "id": "bn_bundle_product_id",
+        "label": "BottleNexus bundle product ID",
+        "default": "",
+        "info": "Leave blank to fall back to the single-bottle product ID. Must be set before the bundle can be sold for real."
       }
     ]
   },

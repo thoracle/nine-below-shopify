@@ -127,6 +127,15 @@
         "behavior": {{ settings.bn_behavior | json }},
         "buttonText": {{ settings.bn_button_text | json }}
       },
+      "bundle": {
+        "enabled": {{ settings.bundle_enabled | json }},
+        "name": {{ settings.bundle_name | json }},
+        "sku": {{ settings.bundle_sku | json }},
+        "price": {{ settings.bundle_price | json }},
+        "retail": {{ settings.bundle_retail | json }},
+        "contents": {{ settings.bundle_contents | json }},
+        "productId": {{ settings.bn_bundle_product_id | json }}
+      },
       "product": {
         "name": {{ settings.product_name | json }},
         "price": {{ settings.product_price | json }},

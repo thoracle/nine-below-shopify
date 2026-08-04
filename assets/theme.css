@@ -1140,3 +1140,92 @@ body.cart-open { overflow: hidden; }
 @media (prefers-reduced-motion: reduce) {
   .js [data-reveal] { opacity: 1; transform: none; }
 }
+
+/* =========================================================================
+   Limited edition bundle — the B arm of `bundle_offer`
+   -------------------------------------------------------------------------
+   The visibility rule is a POSITIVE match on the assigned arm, not a negation
+   of arm A. If the experiment is unregistered, parked, held out, or the whole
+   A/B framework fails to run, `data-ab-bundle_offer` is simply absent and the
+   section stays hidden. Negating arm A would do the opposite — every visitor,
+   on every channel, would be shown a $199.99 offer the moment anything
+   upstream broke.
+
+   This lives in theme.css rather than in the section so it is present in a
+   render-blocking stylesheet in <head>. Inside the section it would arrive
+   mid-body and the offer would flash before being hidden.
+   ========================================================================= */
+:root:not([data-ab-bundle_offer="b"]) [data-section-name="bundle"] { display: none !important; }
+
+.section--bundle { background: var(--ink-deep, #080e11); }
+
+.bundle {
+  display: grid;
+  gap: clamp(1.75rem, 4vw, 3.5rem);
+  align-items: center;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 900px) { .bundle { grid-template-columns: 0.85fr 1fr; } }
+
+.bundle__media img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 3px;
+}
+
+.bundle__heading { margin-block: 0.35rem 0.75rem; }
+.bundle__intro { color: var(--muted, #8098a6); max-width: 46ch; }
+.eyebrow--accent { color: var(--accent, #1f8ab0); }
+
+.bundle__contents {
+  list-style: none;
+  margin: 1.6rem 0;
+  padding: 0;
+  display: grid;
+  gap: 0.85rem;
+}
+.bundle__item { display: flex; align-items: center; gap: 0.9rem; }
+.bundle__thumb {
+  width: 62px; height: 62px; flex: none;
+  object-fit: cover; border-radius: 3px;
+  border: 1px solid rgba(232, 238, 242, 0.16);
+}
+.bundle__itemtext { display: flex; flex-direction: column; min-width: 0; }
+.bundle__itemname { font-weight: 600; }
+.bundle__itemdetail { color: var(--muted, #8098a6); font-size: 0.86rem; }
+
+.bundle__pricing { margin: 1.5rem 0 1.25rem; }
+.bundle__price {
+  display: flex; align-items: baseline; gap: 0.8rem; flex-wrap: wrap;
+  margin: 0 0 0.4rem;
+}
+.bundle__now {
+  font-size: clamp(2.1rem, 5vw, 2.9rem);
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.bundle__was {
+  color: var(--muted, #8098a6);
+  font-size: 1.15rem;
+  font-variant-numeric: tabular-nums;
+}
+.bundle__save {
+  margin: 0;
+  color: var(--accent, #1f8ab0);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.bundle__claim {
+  display: block;
+  color: var(--muted, #8098a6);
+  font-weight: 400;
+  font-size: 0.86rem;
+  margin-top: 0.15rem;
+}
+.bundle__note {
+  margin: 0.85rem 0 0;
+  color: var(--muted, #8098a6);
+  font-size: 0.82rem;
+}

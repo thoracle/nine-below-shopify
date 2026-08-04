@@ -161,7 +161,7 @@
         "@type": "Offer",
         "url": "https://example.com",
         "priceCurrency": "USD",
-        "price": "34.99",
+        "price": "69.99",
         "availability": "https://schema.org/PreOrder",
         "seller": { "@id": "https://example.com/#organization" }
       }}
@@ -339,7 +339,7 @@
     };
   })();
 </script>
-  <script id="ab-registry" type="application/json">{"age_gate":{"enabled":true,"traffic":100,"variants":{"a":50,"b":50}},"hero_headline":{"enabled":true,"traffic":100,"variants":{"a":50,"b":50}},"hero_image":{"enabled":true,"traffic":100,"variants":{"a":50,"b":50}},"hero_layout":{"enabled":false,"traffic":100,"variants":{"a":50,"b":50}},"tt_headline":{"enabled":false,"traffic":100,"channel":"tt","variants":{"a":50,"b":50}},"ig_strip":{"enabled":false,"traffic":100,"channel":"ig","variants":{"a":50,"b":50}}}</script>
+  <script id="ab-registry" type="application/json">{"age_gate":{"enabled":true,"traffic":100,"variants":{"a":50,"b":50}},"hero_headline":{"enabled":true,"traffic":100,"variants":{"a":50,"b":50}},"hero_image":{"enabled":true,"traffic":100,"variants":{"a":50,"b":50}},"hero_layout":{"enabled":false,"traffic":100,"variants":{"a":50,"b":50}},"tt_headline":{"enabled":false,"traffic":100,"channel":"tt","variants":{"a":50,"b":50}},"ig_strip":{"enabled":false,"traffic":100,"channel":"ig","variants":{"a":50,"b":50}},"bundle_offer":{"enabled":true,"traffic":100,"channel":"ig","variants":{"a":50,"b":50}}}</script>
 
   <script>
   (function () {
@@ -768,16 +768,18 @@
     <div class="header__actions"><div class="header__cta" data-header-cta hidden>
           <div class="buybtn buybtn--sm"
      data-buy-root
+     data-offer="single"
      data-location="header">
 
   <button type="button"
           class="btn btn--primary buybtn__btn"
           data-buy-trigger
+          data-offer="single"
           data-location="header"
           aria-label="Order Now — Nine Below — Winter Wheat Vodka">
     <span class="buybtn__label">Order Now</span><span class="buybtn__sep" aria-hidden="true">·</span>
       <span class="buybtn__price">
-        $34.99
+        $69.99
       </span><span class="buybtn__spinner" aria-hidden="true"></span>
   </button><div class="buybtn__vendor" data-buy-vendor-slot hidden></div></div>
 
@@ -793,16 +795,18 @@
     <div class="header__mobile-cta">
       <div class="buybtn buybtn--md buybtn--full"
      data-buy-root
+     data-offer="single"
      data-location="mobile-nav">
 
   <button type="button"
           class="btn btn--primary buybtn__btn"
           data-buy-trigger
+          data-offer="single"
           data-location="mobile-nav"
           aria-label="Order Now — Nine Below — Winter Wheat Vodka">
     <span class="buybtn__label">Order Now</span><span class="buybtn__sep" aria-hidden="true">·</span>
       <span class="buybtn__price">
-        $34.99
+        $69.99
       </span><span class="buybtn__spinner" aria-hidden="true"></span>
   </button><div class="buybtn__vendor" data-buy-vendor-slot hidden></div><p class="buybtn__legal">Must be 21 years of age or older to purchase</p></div>
 
@@ -843,16 +847,18 @@
       <div class="hero__cta">
         <div class="buybtn buybtn--lg"
      data-buy-root
+     data-offer="single"
      data-location="hero">
 
   <button type="button"
           class="btn btn--primary buybtn__btn"
           data-buy-trigger
+          data-offer="single"
           data-location="hero"
           aria-label="Order Now — Nine Below — Winter Wheat Vodka">
     <span class="buybtn__label">Order Now</span><span class="buybtn__sep" aria-hidden="true">·</span>
       <span class="buybtn__price">
-        $34.99
+        $69.99
       </span><span class="buybtn__spinner" aria-hidden="true"></span>
   </button><div class="buybtn__vendor" data-buy-vendor-slot hidden></div><p class="buybtn__legal">Must be 21 years of age or older to purchase</p></div>
 <a class="btn btn--ghost hero__secondary"
@@ -872,6 +878,60 @@
      data-track-cta="hero-scroll-cue">
     <span></span>
   </a>
+</section>
+
+
+</div>
+<div id="shopify-section-bundle" class="shopify-section"><section class="section section--bundle"
+         id="bundle"
+         data-section-name="bundle">
+  <div class="wrap">
+    <div class="bundle">
+
+      <div class="bundle__media"><img src="../assets/bundle-bottles.webp"
+               srcset="../assets/bundle-600.webp 600w,
+                       ../assets/bundle-bottles.webp 900w"
+               sizes="(min-width: 900px) 44vw, 92vw"
+               alt="Three Nine Below Winter Wheat bottles with the tee and cap"
+               width="900" height="1158" loading="lazy" decoding="async"></div>
+
+      <div class="bundle__body"><p class="eyebrow eyebrow--accent">Limited edition</p><h2 class="h2 bundle__heading">The complete Nine Below set</h2><div class="bundle__intro rte"><p>Three bottles of the Winter Wheat, plus the tee and the cap. Bottled once a year — when this run is gone it is gone.</p></div><ul class="bundle__contents" role="list"><li class="bundle__item" data-block-id="b1"><img class="bundle__thumb"
+                       src="../assets/bundle-600.webp"
+                       alt="" width="130" height="130" loading="lazy" decoding="async"><div class="bundle__itemtext">
+                  <span class="bundle__itemname">3 × 750ml</span><span class="bundle__itemdetail">Winter Wheat, 40% ABV</span></div>
+              </li><li class="bundle__item" data-block-id="b2"><img class="bundle__thumb"
+                       src="../assets/bundle-tee.webp"
+                       alt="" width="130" height="130" loading="lazy" decoding="async"><div class="bundle__itemtext">
+                  <span class="bundle__itemname">Heavyweight tee</span><span class="bundle__itemdetail">Embroidered wordmark</span></div>
+              </li><li class="bundle__item" data-block-id="b3"><img class="bundle__thumb"
+                       src="../assets/bundle-cap.webp"
+                       alt="" width="130" height="130" loading="lazy" decoding="async"><div class="bundle__itemtext">
+                  <span class="bundle__itemname">Structured cap</span><span class="bundle__itemdetail">Six panel, adjustable</span></div>
+              </li></ul><div class="bundle__pricing">
+          <p class="bundle__price">
+            <span class="bundle__now">$199.99</span><s class="bundle__was">
+                <span class="visually-hidden">Regular price </span>$262.95
+              </s></p><p class="bundle__save">
+              Save $62.96<span class="bundle__claim">30% off the vodka — tee and cap included at full price</span></p></div><div class="buybtn buybtn--lg buybtn--full"
+     data-buy-root
+     data-offer="bundle"
+     data-location="bundle">
+
+  <button type="button"
+          class="btn btn--primary buybtn__btn"
+          data-buy-trigger
+          data-offer="bundle"
+          data-location="bundle"
+          aria-label="Get the bundle — Nine Below — Winter Wheat Vodka">
+    <span class="buybtn__label">Get the bundle</span><span class="buybtn__sep" aria-hidden="true">·</span>
+      <span class="buybtn__price">
+        $199.99
+      </span><span class="buybtn__spinner" aria-hidden="true"></span>
+  </button><div class="buybtn__vendor" data-buy-vendor-slot hidden></div><p class="buybtn__legal">Must be 21 years of age or older to purchase</p></div>
+<p class="bundle__note">Ships as one parcel. Adult signature required on delivery.</p></div>
+
+    </div>
+  </div>
 </section>
 
 
@@ -916,16 +976,18 @@
       <div class="rum__cta">
         <div class="buybtn buybtn--md"
      data-buy-root
+     data-offer="single"
      data-location="product-story">
 
   <button type="button"
           class="btn btn--primary buybtn__btn"
           data-buy-trigger
+          data-offer="single"
           data-location="product-story"
           aria-label="Order Now — Nine Below — Winter Wheat Vodka">
     <span class="buybtn__label">Order Now</span><span class="buybtn__sep" aria-hidden="true">·</span>
       <span class="buybtn__price">
-        $34.99
+        $69.99
       </span><span class="buybtn__spinner" aria-hidden="true"></span>
   </button><div class="buybtn__vendor" data-buy-vendor-slot hidden></div><p class="buybtn__legal">Must be 21 years of age or older to purchase</p></div>
 
@@ -1142,16 +1204,18 @@
       <p>Ready when you are.</p>
       <div class="buybtn buybtn--md"
      data-buy-root
+     data-offer="single"
      data-location="faq">
 
   <button type="button"
           class="btn btn--primary buybtn__btn"
           data-buy-trigger
+          data-offer="single"
           data-location="faq"
           aria-label="Order Now — Nine Below — Winter Wheat Vodka">
     <span class="buybtn__label">Order Now</span><span class="buybtn__sep" aria-hidden="true">·</span>
       <span class="buybtn__price">
-        $34.99
+        $69.99
       </span><span class="buybtn__spinner" aria-hidden="true"></span>
   </button><div class="buybtn__vendor" data-buy-vendor-slot hidden></div><p class="buybtn__legal">Must be 21 years of age or older to purchase</p></div>
 
@@ -1270,20 +1334,22 @@
     <span class="stickybar__name">Nine Below — Winter Wheat Vodka</span>
     <span class="stickybar__meta">
       750ml · 40% ABV
-        · $34.99</span>
+        · $69.99</span>
   </div>
   <div class="buybtn buybtn--sm"
      data-buy-root
+     data-offer="single"
      data-location="sticky">
 
   <button type="button"
           class="btn btn--primary buybtn__btn"
           data-buy-trigger
+          data-offer="single"
           data-location="sticky"
           aria-label="Order Now — Nine Below — Winter Wheat Vodka">
     <span class="buybtn__label">Order Now</span><span class="buybtn__sep" aria-hidden="true">·</span>
       <span class="buybtn__price">
-        $34.99
+        $69.99
       </span><span class="buybtn__spinner" aria-hidden="true"></span>
   </button><div class="buybtn__vendor" data-buy-vendor-slot hidden></div></div>
 
@@ -1384,9 +1450,18 @@
         "behavior": "sidebar",
         "buttonText": "Order Now"
       },
+      "bundle": {
+        "enabled": true,
+        "name": "Nine Below — Limited Edition Bundle",
+        "sku": "NB-BUNDLE-LE",
+        "price": "199.99",
+        "retail": "262.95",
+        "contents": "3 × 750ml · Tee · Cap",
+        "productId": ""
+      },
       "product": {
         "name": "Nine Below — Winter Wheat Vodka",
-        "price": "34.99",
+        "price": "69.99",
         "currency": "USD",
         "sku": "NB-WW-750",
         "size": "750ml",
