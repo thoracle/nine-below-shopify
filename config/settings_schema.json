@@ -519,6 +519,40 @@
       },
       {
         "type": "header",
+        "content": "What ad traffic sees"
+      },
+      {
+        "type": "paragraph",
+        "content": "Sections hidden from paid-social visitors, by tracking name. The full site is unaffected. Leave a per-channel field blank to use the shared list. Available: hero, product_story, tasting_notes, craft_process, serve, social_proof, faq, email_capture."
+      },
+      {
+        "type": "text",
+        "id": "flow_hide_sections",
+        "label": "Hide on all ad flows",
+        "default": "tasting_notes,craft_process,serve,faq,email_capture",
+        "info": "email_capture is the costly one — it is a competing conversion, so a signup on paid traffic is usually a lost sale. serve is post-purchase content."
+      },
+      {
+        "type": "text",
+        "id": "flow_hide_sections_ig",
+        "label": "Instagram override",
+        "default": ""
+      },
+      {
+        "type": "text",
+        "id": "flow_hide_sections_tt",
+        "label": "TikTok override",
+        "default": ""
+      },
+      {
+        "type": "text",
+        "id": "flow_hide_sections_fb",
+        "label": "Facebook override",
+        "default": "",
+        "info": "Facebook skews older and more considered, and buys with more deliberation — a lighter strip that keeps faq may well win here. Worth testing rather than assuming."
+      },
+      {
+        "type": "header",
         "content": "QA"
       },
       {

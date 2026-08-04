@@ -70,7 +70,11 @@
     "flow_channel_ig": "instagram,ig,insta,igshopping",
     "flow_channel_tt": "tiktok,tt,tiktokads,bytedance",
     "flow_channel_fb": "facebook,fb,meta,messenger,audience_network",
-    "ga4_traffic_type": "demo"
+    "ga4_traffic_type": "demo",
+    "flow_hide_sections": "tasting_notes,craft_process,serve,faq,email_capture",
+    "flow_hide_sections_ig": "",
+    "flow_hide_sections_tt": "",
+    "flow_hide_sections_fb": ""
   },
   "platform_customizations": {}
 }

@@ -45,6 +45,76 @@
      the visitor came FROM social, sending them back is a guaranteed loss. */
   :root[data-flow="focus"] .footer__social { display: none !important; }
 
+  {%- comment -%}
+    ---- section stripping ------------------------------------------------
+
+    An ad click is not a browse. Someone who just watched a fifteen-second reel
+    has one decision in front of them, and every section between them and the
+    buy button is a chance to leave instead.
+
+    Three of these are not close calls:
+
+      serve          Post-purchase content. You read how to make a martini
+                     AFTER you own the bottle.
+      email_capture  A COMPETING conversion. Someone who joins the list instead
+                     of buying is a lost sale on traffic you already paid for —
+                     the single most expensive thing on an ad landing.
+      craft_process  Long-form brand story. It earns its place on the full site
+                     and costs scroll depth on an ad flow.
+
+    Kept, because each supports the decision rather than delaying it: the hero
+    (the offer), the product story (why it is different, plus a second buy
+    button), and social proof (credibility).
+
+    Driven by settings rather than hardcoded, because this is exactly the sort
+    of judgement that should be settled by a test rather than by an opinion —
+    including mine.
+
+    The rules are emitted per channel state rather than as a blanket rule plus
+    overrides, because un-hiding would need `display: revert`, which throws away
+    whatever display value the section actually wanted.
+  {%- endcomment -%}
+
+  {%- liquid
+    assign strip_base = settings.flow_hide_sections | default: ''
+    assign strip_ig = settings.flow_hide_sections_ig | default: ''
+    assign strip_tt = settings.flow_hide_sections_tt | default: ''
+    assign strip_fb = settings.flow_hide_sections_fb | default: ''
+    if strip_ig == blank
+      assign strip_ig = strip_base
+    endif
+    if strip_tt == blank
+      assign strip_tt = strip_base
+    endif
+    if strip_fb == blank
+      assign strip_fb = strip_base
+    endif
+  -%}
+
+  {%- comment -%} Focus traffic with no channel resolved. {%- endcomment -%}
+  {%- assign list = strip_base | split: ',' -%}
+  {%- for name in list -%}
+    {%- assign n = name | strip -%}
+    {%- if n != blank -%}
+  :root[data-flow="focus"]:not([data-channel]) [data-section-name="{{ n }}"] { display: none !important; }
+    {%- endif -%}
+  {%- endfor -%}
+
+  {%- assign channels = 'ig,tt,fb' | split: ',' -%}
+  {%- for ch in channels -%}
+    {%- case ch -%}
+      {%- when 'ig' -%}{%- assign list = strip_ig | split: ',' -%}
+      {%- when 'tt' -%}{%- assign list = strip_tt | split: ',' -%}
+      {%- when 'fb' -%}{%- assign list = strip_fb | split: ',' -%}
+    {%- endcase -%}
+    {%- for name in list -%}
+      {%- assign n = name | strip -%}
+      {%- if n != blank -%}
+  :root[data-flow="focus"][data-channel="{{ ch }}"] [data-section-name="{{ n }}"] { display: none !important; }
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endfor -%}
+
   /* ---- per channel ----------------------------------------------------
      The three platforms do not need the same treatment, so the strip is not
      applied at one uniform strength.

@@ -46,6 +46,30 @@
     body.has-sticky-bar{--stickybar-h:76px}
   }
 
+/* Mirrors snippets/flow-styles.liquid — ad-flow section stripping.
+   An ad click is not a browse: serve is post-purchase content and
+   email_capture is a competing conversion. */
+:root[data-flow="focus"]:not([data-channel]) [data-section-name="tasting_notes"] { display: none !important; }
+:root[data-flow="focus"]:not([data-channel]) [data-section-name="craft_process"] { display: none !important; }
+:root[data-flow="focus"]:not([data-channel]) [data-section-name="serve"] { display: none !important; }
+:root[data-flow="focus"]:not([data-channel]) [data-section-name="faq"] { display: none !important; }
+:root[data-flow="focus"]:not([data-channel]) [data-section-name="email_capture"] { display: none !important; }
+:root[data-flow="focus"][data-channel="ig"] [data-section-name="tasting_notes"] { display: none !important; }
+:root[data-flow="focus"][data-channel="ig"] [data-section-name="craft_process"] { display: none !important; }
+:root[data-flow="focus"][data-channel="ig"] [data-section-name="serve"] { display: none !important; }
+:root[data-flow="focus"][data-channel="ig"] [data-section-name="faq"] { display: none !important; }
+:root[data-flow="focus"][data-channel="ig"] [data-section-name="email_capture"] { display: none !important; }
+:root[data-flow="focus"][data-channel="tt"] [data-section-name="tasting_notes"] { display: none !important; }
+:root[data-flow="focus"][data-channel="tt"] [data-section-name="craft_process"] { display: none !important; }
+:root[data-flow="focus"][data-channel="tt"] [data-section-name="serve"] { display: none !important; }
+:root[data-flow="focus"][data-channel="tt"] [data-section-name="faq"] { display: none !important; }
+:root[data-flow="focus"][data-channel="tt"] [data-section-name="email_capture"] { display: none !important; }
+:root[data-flow="focus"][data-channel="fb"] [data-section-name="tasting_notes"] { display: none !important; }
+:root[data-flow="focus"][data-channel="fb"] [data-section-name="craft_process"] { display: none !important; }
+:root[data-flow="focus"][data-channel="fb"] [data-section-name="serve"] { display: none !important; }
+:root[data-flow="focus"][data-channel="fb"] [data-section-name="faq"] { display: none !important; }
+:root[data-flow="focus"][data-channel="fb"] [data-section-name="email_capture"] { display: none !important; }
+
 /* Mirrors snippets/flow-styles.liquid — per-channel rules */
 /* ---- per channel ----------------------------------------------------
      The three platforms do not need the same treatment, so the strip is not
