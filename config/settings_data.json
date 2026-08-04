@@ -32,7 +32,7 @@
     "age_gate_deny_text": "You're not old enough to view this content.",
     "ga4_enabled": true,
     "ga4_measurement_id": "G-LD8107WMV2",
-    "ga4_debug": true,
+    "ga4_debug": false,
     "consent_mode": true,
     "track_scroll_depth": true,
     "track_outbound": true,
