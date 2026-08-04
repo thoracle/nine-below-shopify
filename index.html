@@ -101,6 +101,8 @@
     <li><strong>Variants are assigned before first paint.</strong> Inline and blocking, so nobody sees arm A flash before arm B — which would otherwise bias the very result you are measuring.</li>
     <li><strong>Exposure is counted when the visitor can actually see the thing.</strong> Impressions are held behind the gate, because counting someone who never got past it deflates every conversion rate and makes the sample-size target too small.</li>
     <li><strong>Checkout is off-domain</strong>, so the funnel is instrumented from the outside and the experiment arm is carried into the retailer's UTM payload — the only way the result reconciles to revenue.</li>
+    <li><strong>An offer test, not just a copy test.</strong> One experiment swaps the entire proposition — a $69.99 bottle for a $199.99 bundle — and removes the cheaper CTA rather than adding a second one. It is scoped to a single platform, and it is read on <em>revenue per visitor</em>: at three times the price an arm can convert far worse and still be worth more, and a conversion-rate verdict would kill the better offer.</li>
+    <li><strong>The offer section is hidden by a positive match, not a negation.</strong> It appears only for a visitor explicitly assigned to that arm, so an unregistered, parked, held-out or entirely broken experiment leaves it hidden. The opposite polarity would leak a $199.99 offer to everyone the moment anything upstream failed.</li>
     <li><strong>The landing adapts to the platform that sent you.</strong> Instagram, TikTok and Facebook get their own headline and their own degree of stripping, resolved before paint from the campaign parameters, the referrer, or the in-app browser itself. Every event carries the channel, so TikTok's much higher age-gate rejection rate never hides inside a blended number.</li>
   </ul>
 
@@ -111,6 +113,8 @@
       <tbody>
         <tr><td><a href="preview/?ab=age_gate:b&amp;agegate=reset">?ab=age_gate:b</a></td><td>Forces the birthdate age gate instead of the one-tap version</td></tr>
         <tr><td><a href="preview/?ab=hero_image:b&amp;agegate=reset">?ab=hero_image:b</a></td><td>Forces the alternate hero image</td></tr>
+        <tr><td><a href="preview/?ch=ig&amp;ab=bundle_offer:b&amp;agegate=reset">?ch=ig&amp;ab=bundle_offer:b</a></td><td>The $199.99 bundle offer, which <em>replaces</em> the single-bottle CTA. Needs <code>ch=ig</code> — the experiment only enrols Instagram traffic</td></tr>
+        <tr><td><a href="preview/?ch=ig&amp;ab=bundle_offer:a&amp;agegate=reset">?ch=ig&amp;ab=bundle_offer:a</a></td><td>The control for that test — the single bottle at $69.99</td></tr>
         <tr><td><a href="preview/?ab=reset&amp;agegate=reset">?ab=reset</a></td><td>Clears assignments and re-buckets you</td></tr>
         <tr><td><a href="preview/?agegate=reset">?agegate=reset</a></td><td>Re-opens the age gate after you have confirmed</td></tr>
         <tr><td><a href="preview/?debug=1&amp;agegate=reset">?debug=1</a></td><td>Shows the live GA4 event inspector</td></tr>
@@ -122,8 +126,18 @@
     </table>
   </div>
   <p>
-    Nothing is sent anywhere. The build runs in demo mode with a placeholder
-    analytics ID and a mock cart, so the event stream is inspectable but inert.
+    <strong>This demo does send analytics.</strong> It is wired to a real GA4
+    property so the funnel can be verified end to end, and page views, age-gate
+    outcomes, experiment exposures and cart events are recorded. Nothing
+    identifies you, and no personal data is collected or requested. If you would
+    rather not be counted, do not proceed past the age gate — nothing is sent
+    until you do.
+  </p>
+  <p>
+    <strong>The cart is a mock.</strong> No order can be placed, no payment
+    details are ever requested, and nothing reaches a retailer. Add
+    <code>?debug=1</code> to any URL to watch the exact event stream this page
+    produces.
   </p>
 
   <h2>Repository</h2>
