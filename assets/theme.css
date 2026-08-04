@@ -1157,6 +1157,26 @@ body.cart-open { overflow: hidden; }
    ========================================================================= */
 :root:not([data-ab-bundle_offer="b"]) [data-section-name="bundle"] { display: none !important; }
 
+/* The wrapper is transparent to the bar's own flex layout. This is declared
+   BEFORE the hide rules below, not after. `display: none !important` does beat
+   a later `display: contents` under a correct cascade — but the test harness
+   runs on jsdom, whose CSSOM resolves these last-wins and reported both offers
+   as visible. Ordering it first is correct under either implementation, and it
+   means the tests verify the behaviour instead of passing by luck. */
+.stickybar__offer { display: contents; }
+
+/* Arm B REPLACES the offer rather than adding to it: the single-bottle CTA is
+   removed so the bundle is the only thing on the page to buy. Scoped to an
+   explicit `="b"` so it can only ever fire for a visitor actually assigned to
+   that arm — if the attribute is missing, the bottle stays buyable. */
+:root[data-ab-bundle_offer="b"] [data-buy-root][data-offer="single"],
+:root[data-ab-bundle_offer="b"] [data-offer-variant="single"] { display: none !important; }
+
+/* And the mirror image, fail-closed: the bundle bar is hidden unless the arm
+   is explicitly B, so a missing attribute leaves the bottle bar showing rather
+   than advertising an offer nobody was enrolled in. */
+:root:not([data-ab-bundle_offer="b"]) [data-offer-variant="bundle"] { display: none !important; }
+
 .section--bundle { background: var(--ink-deep, #080e11); }
 
 .bundle {

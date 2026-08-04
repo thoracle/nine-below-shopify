@@ -20,6 +20,20 @@ const shown = async o => {
   return { on: !!el && visible(w, el), w, d, el };
 };
 
+/* Which sticky-bar offer the CSS selects.
+   The bar carries the `hidden` attribute until theme.js reveals it, and that
+   only happens behind an IntersectionObserver, which jsdom does not implement —
+   so in here the bar is always hidden and every variant would read as invisible.
+   Un-hiding it first tests the arm selection, which is the part that matters,
+   rather than the reveal animation. */
+const liveBars = (w, d) => {
+  const bar = d.querySelector('[data-sticky-bar]');
+  if (bar) bar.hidden = false;
+  return [...d.querySelectorAll('[data-offer-variant]')]
+    .filter(b => visible(w, b))
+    .map(b => b.getAttribute('data-offer-variant'));
+};
+
 suite('bundle offer');
 
 section('it appears only for an enrolled Instagram visitor in arm B');
@@ -73,6 +87,35 @@ section('what the section actually says');
      /21/.test(el.textContent));
 }
 
+section('arm B replaces the offer — the bottle is not also for sale');
+{
+  const { w, d } = await mount({ search: '?ch=ig&ab=bundle_offer:b', agePass: PASS });
+  const singles = [...d.querySelectorAll('[data-buy-root][data-offer="single"]')];
+  ok('there are single-bottle buttons in the markup', singles.length > 0);
+  ok('but none of them are visible', !singles.some(b => visible(w, b)),
+     'arm B must present one offer, not two');
+
+  const bundleBtn = d.querySelector('[data-section-name="bundle"] [data-buy-root]');
+  ok('the bundle button is the one on offer', !!bundleBtn && visible(w, bundleBtn));
+
+  eq('exactly one sticky bar variant is live', liveBars(w, d), ['bundle']);
+}
+{
+  const { w, d } = await mount({ search: '?ch=ig&ab=bundle_offer:a', agePass: PASS });
+  const hero = d.querySelector('.hero__cta [data-buy-root]');
+  ok('arm A still sells the bottle', !!hero && visible(w, hero));
+  eq('and shows the bottle bar', liveBars(w, d), ['single']);
+}
+{
+  /* The swap is keyed on an explicit ="b". With the framework gone the
+     attribute is absent, and the bottle must remain buyable — hiding it would
+     leave a page with nothing on it to purchase at all. */
+  const html = SRC.replace(/<script id="ab-registry"[\s\S]*?<\/script>/, '');
+  const { w, d } = await mount({ search: '?ch=ig', agePass: PASS, html });
+  const hero = d.querySelector('.hero__cta [data-buy-root]');
+  ok('no A/B framework — the bottle is still on sale', !!hero && visible(w, hero));
+}
+
 section('the two offers report as different products');
 {
   const { w, el } = await shown({ search: '?ch=ig&ab=bundle_offer:b' });
@@ -85,17 +128,29 @@ section('the two offers report as different products');
   eq('click reported as bundle', paramsOf(w, 'buy_button_click').offer_type, 'bundle');
 }
 {
-  const { w, d } = await mount({ search: '?ch=ig&ab=bundle_offer:b', agePass: PASS });
-  /* Enrolled in arm B, but buys a single bottle from the hero. Reporting that
-     as a bundle sale would inflate the arm it is supposed to measure. */
+  /* Arm A is where the bottle is sold, and it must still report as the bottle
+     — the offer is read from the clicked button, so a shared code path that
+     quietly defaulted to the bundle would show up here. */
+  const { w, d } = await mount({ search: '?ch=ig&ab=bundle_offer:a', agePass: PASS });
   const hero = [...d.querySelectorAll('[data-buy-trigger]')]
     .find(b => b.getAttribute('data-offer') !== 'bundle' && visible(w, b));
-  ok('the single-bottle button is still reachable in arm B', !!hero);
+  ok('the bottle is buyable in arm A', !!hero);
   click(w, hero);
   await new Promise(r => setTimeout(r, 400));
   const atc = paramsOf(w, 'add_to_cart');
   eq('offer_type', atc.offer_type, 'single');
   eq('value', atc.value, 69.99);
+}
+{
+  /* And in arm B there is no way to buy a single bottle at all — that is the
+     whole point of "replaces" rather than "adds". */
+  const { w, d } = await mount({ search: '?ch=ig&ab=bundle_offer:b', agePass: PASS });
+  const buyable = [...d.querySelectorAll('[data-buy-trigger]')]
+    .filter(b => visible(w, b))
+    .map(b => b.getAttribute('data-offer'));
+  ok('every reachable buy button is the bundle',
+     buyable.length > 0 && buyable.every(o => o === 'bundle'),
+     buyable.join(',') || 'nothing buyable at all');
 }
 
 section('the handoff tag tells BottleNexus which offer was bought');

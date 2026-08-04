@@ -100,7 +100,18 @@
     var bar = document.querySelector('[data-sticky-bar]');
     var headerCta = document.querySelector('[data-header-cta]');
 
-    if (!heroCta || (!bar && !headerCta)) return;
+    /* In the bundle arm the hero CTA is removed and the bundle's button is the
+       primary one. Observing a display:none element would report it as
+       permanently off-screen, pinning the sticky bar open from the very top of
+       the page — competing with the offer instead of backing it up.
+       offsetParent is null exactly when an ancestor is display:none. */
+    var anchor = heroCta;
+    if (!anchor || !anchor.offsetParent) {
+      anchor = document.querySelector('[data-section-name="bundle"] [data-buy-root]')
+               || anchor;
+    }
+
+    if (!anchor || (!bar && !headerCta)) return;
     if (!('IntersectionObserver' in window)) return;
 
     if (bar) { bar.hidden = false; document.body.classList.add('has-sticky-bar'); }
@@ -121,7 +132,7 @@
       }
     }, { threshold: 0 });
 
-    io.observe(heroCta);
+    io.observe(anchor);
   }
 
   /* =====================================================================

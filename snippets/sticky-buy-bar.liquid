@@ -6,20 +6,50 @@
   reads the product story has to scroll back up to act. A persistent bar is
   consistently one of the highest-yield changes on a single-product mobile page.
 
-  Revealed only after the hero CTA leaves the viewport, so it never competes
-  with the primary button.
+  Revealed only after the primary CTA leaves the viewport, so it never competes
+  with it.
+
+  Two offers are rendered, and exactly one is shown. In the `bundle_offer` B arm
+  the bundle REPLACES the bottle, so a bar still advertising $69.99 would
+  contradict the only offer on the page. Selection is done in CSS from
+  `data-ab-bundle_offer` (see theme.css) rather than in JavaScript, so the right
+  bar is correct at first paint instead of being swapped after it.
 {%- endcomment -%}
 
 <div class="stickybar" id="sticky-buy-bar" data-sticky-bar hidden>
-  <div class="stickybar__info">
-    <span class="stickybar__name">{{ settings.product_name }}</span>
-    <span class="stickybar__meta">
-      {{ settings.product_size }}
-      {%- if settings.product_abv != blank %} · {{ settings.product_abv }}{% endif -%}
-      {%- if settings.product_price != blank %}
-        · {{ settings.product_currency | replace: 'USD', '$' }}{{ settings.product_price }}
-      {%- endif -%}
-    </span>
+
+  <div class="stickybar__offer" data-offer-variant="single">
+    <div class="stickybar__info">
+      <span class="stickybar__name">{{ settings.product_name }}</span>
+      <span class="stickybar__meta">
+        {{ settings.product_size }}
+        {%- if settings.product_abv != blank %} · {{ settings.product_abv }}{% endif -%}
+        {%- if settings.product_price != blank %}
+          · {{ settings.product_currency | replace: 'USD', '$' }}{{ settings.product_price }}
+        {%- endif -%}
+      </span>
+    </div>
+    {% render 'buy-button', location: 'sticky', size: 'sm' %}
   </div>
-  {% render 'buy-button', location: 'sticky', size: 'sm' %}
+
+  {%- if settings.bundle_enabled -%}
+    <div class="stickybar__offer" data-offer-variant="bundle">
+      <div class="stickybar__info">
+        <span class="stickybar__name">{{ settings.bundle_name }}</span>
+        <span class="stickybar__meta">
+          {{ settings.bundle_contents }}
+          {%- if settings.bundle_price != blank %}
+            · {{ settings.product_currency | replace: 'USD', '$' }}{{ settings.bundle_price }}
+          {%- endif -%}
+        </span>
+      </div>
+      {% render 'buy-button',
+           location: 'sticky',
+           size: 'sm',
+           offer: 'bundle',
+           label: settings.bn_button_text,
+           price: settings.bundle_price %}
+    </div>
+  {%- endif -%}
+
 </div>
