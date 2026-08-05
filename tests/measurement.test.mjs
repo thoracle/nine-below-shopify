@@ -5,7 +5,7 @@
    gate and you count people who never saw the variant. */
 
 import { mount, visible, PASS, events, impressions, paramsOf, passGate,
-         suite, section, ok, eq, done } from './harness.mjs';
+         readPreview, suite, section, ok, eq, done } from './harness.mjs';
 
 suite('measurement');
 
@@ -84,6 +84,74 @@ section('the vendor script is not loaded before age is confirmed');
    .dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
   await new Promise(r => setTimeout(r, 300));
   ok('and never loads for a visitor who refuses', !events(w).includes('buy_button_ready'));
+}
+
+/* ---------------------------------------------------------------------------
+   Load order.
+
+   ab.js reports the denominator of every experiment through window.NB, which
+   analytics.js publishes on its LAST line. Any arrangement where ab.js runs
+   first — a reordered layout, or analytics.js throwing before it finishes —
+   used to leave ab.js holding a no-op it had cached at load, and it would then
+   discard every impression for the rest of the page without a word. The page
+   looks perfect, the funnel logs, and the exposure count is zero.
+
+   These fail if the reference to window.NB is ever cached at load time again.
+   --------------------------------------------------------------------------- */
+
+section('impressions survive ab.js loading before analytics.js');
+{
+  /* Deferred scripts execute in document order, so swapping the two tags is
+     enough to run ab.js while window.NB does not yet exist. */
+  const html = readPreview().replace(
+    /(<script src="[^"]*analytics\.js"[^>]*><\/script>)\s*(<script src="[^"]*ab\.js"[^>]*><\/script>)/,
+    '$2$1'
+  );
+  ok('the swap actually applied', html !== readPreview());
+
+  const { w, d } = await mount({ html, search: '?ab=reset,age_gate:a' });
+  passGate(w, d);
+  await new Promise(r => setTimeout(r, 150));
+  const imps = impressions(w);
+  ok('hero_headline still counted', imps.includes('hero_headline'));
+  ok('hero_image still counted', imps.includes('hero_image'));
+  ok('the self-reporting gate still counted', imps.includes('age_gate'));
+}
+
+section('and survive window.NB being published late');
+{
+  /* The real hazard is subtler than order: impressions are held until the gate
+     lifts, so window.NB only has to exist by THEN, not at load. A cached
+     reference cannot see it arrive; a use-time read can. */
+  const { w, d } = await mount({
+    search: '?ab=reset,age_gate:a',
+    mutate: (p, b) => p.endsWith('assets/analytics.js')
+      ? b.replace('window.NB = {', 'window.__NB_LATE__ = {')
+        + '\n;setTimeout(function () { window.NB = window.__NB_LATE__; }, 40);'
+      : undefined
+  });
+  ok('window.NB was genuinely absent at ab.js load', !!w.__NB_LATE__);
+  passGate(w, d);
+  await new Promise(r => setTimeout(r, 200));
+  ok('impressions landed once window.NB appeared', impressions(w).includes('hero_headline'));
+}
+
+section('and ab.js stays silent, not broken, when window.NB never arrives');
+{
+  const { w, d, logs } = await mount({
+    search: '?ab=reset,age_gate:a',
+    mutate: (p, b) => p.endsWith('assets/analytics.js')
+      ? b.replace('window.NB = {', 'window.__NB_NEVER__ = {')
+      : undefined
+  });
+  ok('nothing threw', !logs.some(l => l.startsWith('throw:')), logs.join(' | '));
+  ok('no impressions were invented', impressions(w).length === 0);
+  /* The gate must still block. An analytics failure may cost measurement; it
+     may never cost compliance. */
+  ok('the age gate still holds', d.documentElement.getAttribute('data-age') !== 'ok');
+  passGate(w, d);
+  await new Promise(r => setTimeout(r, 120));
+  ok('and still opens on confirm', d.documentElement.getAttribute('data-age') === 'ok');
 }
 
 done();

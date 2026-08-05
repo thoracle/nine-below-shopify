@@ -33,7 +33,19 @@
   var AB = window.NINEBELOW_AB;
   if (!AB) return; // framework disabled
 
-  var track = (window.NB && window.NB.track) || function () {};
+  /* Read at use time, never cached at load time. window.NB is published at the
+     END of analytics.js, so a snapshot taken here is empty if that file ever
+     runs later than this one — or throws before its last line — and the cached
+     no-op would then be permanent: every impression silently discarded for the
+     rest of the page, with nothing in the console to say so. Impressions are the
+     denominator of every experiment, so losing them does not break a rate, it
+     invents one. Reading late also means the deferred impressions (held until
+     the age gate lifts, often seconds later) still land if window.NB arrives in
+     the meantime. Same rule, and same reason, as cfg() in age-gate.js. */
+  function track(name, params) {
+    var t = window.NB && window.NB.track;
+    if (typeof t === 'function') { try { t(name, params || {}); } catch (e) {} }
+  }
 
   /* Run fn once the visitor is past the age gate — immediately if they already
      are, or if this page has no gate. The API is published by the blocking head

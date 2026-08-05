@@ -49,6 +49,12 @@ class ThemeLoader extends ResourceLoader {
   }
 }
 
+/** The generated preview, as a browser would receive it. Exported so a suite can
+    damage it deliberately — reordering scripts, dropping a tag — and mount the
+    result through `mount({ html })`. */
+export const readPreview = () =>
+  fs.readFileSync(path.join(ROOT, 'preview/index.html'), 'utf8');
+
 /**
  * Render the preview.
  * @param {object} o
@@ -67,7 +73,7 @@ export async function mount(o = {}) {
     .on('error', (...a) => logs.push('error: ' + a.join(' ')))
     .on('warn', (...a) => logs.push('warn: ' + a.join(' ')));
 
-  const src = o.html ?? fs.readFileSync(path.join(ROOT, 'preview/index.html'), 'utf8');
+  const src = o.html ?? readPreview();
   const opts = {
     url: 'https://theme.test/preview/' + (o.search || ''),
     runScripts: o.js === false ? 'outside-only' : 'dangerously',
