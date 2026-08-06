@@ -1,0 +1,16 @@
+# Two dependencies, mirroring what the toolchain actually needs.
+#
+# python-liquid renders the theme into preview/index.html.
+# playwright runs the suites in a real Chromium — the theme's own JavaScript
+#   has to execute, and a real browser is the only thing that resolves the
+#   cascade, honours !important and answers visibility truthfully.
+#
+#   python3 -m venv .venv
+#   .venv/bin/pip install -r requirements.txt
+#   .venv/bin/playwright install chromium
+python-liquid>=2.3
+playwright>=1.40
+
+# Only needed by tools/ga4_pull.py, and only when actually pulling from GA4.
+# google-auth
+# requests

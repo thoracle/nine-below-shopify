@@ -5,11 +5,18 @@ Thumbs.db
 .idea/
 .vscode/
 
-# Node — only present if you install the GA4 pull dependency
+# Python toolchain
+.venv/
+__pycache__/
+*.pyc
+
+# Leftovers from the npm toolchain, removed 5 Aug 2026. Nothing generates these
+# any more; the entries stay so that a stale node_modules on someone's disk — or
+# an `npm install` run out of habit — cannot be committed.
 node_modules/
 package-lock.json
 
-# Credentials for tools/ga4-pull.mjs. Never commit a service-account key.
+# Credentials for tools/ga4_pull.py. Never commit a service-account key.
 *service-account*.json
 *credentials*.json
 gcp-*.json
@@ -27,4 +34,4 @@ restart.md
 HANDOVER.md
 *.local.md
 
-# Build tooling for tools/build-preview.mjs
+# Build tooling for tools/build_preview.py
