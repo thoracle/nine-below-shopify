@@ -21,6 +21,12 @@ an engine that behaves like the one visitors use.
 | `test_bundle` | the $199.99 offer, every way it must not leak, that arm B *replaces* the bottle, and that the two offers report as different products |
 | `test_stats` | the results-view maths against published values — Newcombe's Wilson intervals, chi-square tables, normal quantiles, and the O'Brien–Fleming boundary |
 | `test_ga4_pull` | the GA4 tally against synthetic rows: attribution across experiments, revenue summed not re-counted, weights and control ordering |
+| `test_traffic` | which visits are marked ours — the QA instruments that mark, the persistence, and above all the campaign parameters that must never mark |
+
+`dev.py` discovers these from `tests/test_*.py` rather than from a list, so a
+new suite runs the moment it exists. It was a hardcoded list until 6 August,
+which meant a suite nobody remembered to register would sit in the repo passing
+nothing while `check` reported every suite green.
 
 ## Four things to know before adding one
 

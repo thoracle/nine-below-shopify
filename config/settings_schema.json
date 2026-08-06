@@ -400,9 +400,9 @@
       {
         "type": "text",
         "id": "ga4_traffic_type",
-        "label": "Traffic label",
+        "label": "Internal traffic label",
         "default": "",
-        "info": "Tags this build's events so they can be filtered out in GA4 (Admin → Data streams → Configure tag settings → Define internal traffic). Use 'demo' or 'staging'. Leave blank on the live store."
+        "info": "Tags OUR OWN visits so they can be excluded in GA4 (Admin → Data settings → Data filters). Sent only when the visit resolves as internal — a QA link (?qa=1, ?debug=1, ?ab=reset), a stored QA marker, or a localhost build. Real visitors send nothing. Must match the filter's value exactly; a mismatch excludes nothing and reports no error. Blank disables the tagging."
       },
       {
         "type": "checkbox",

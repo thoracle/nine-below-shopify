@@ -27,8 +27,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 PY = sys.executable
 
-SUITES = ["test_age_gate", "test_bundle", "test_channel",
-          "test_measurement", "test_stats", "test_ga4_pull"]
+# Discovered, not listed. This was a hardcoded list until 6 Aug, and a new
+# suite that nobody remembered to add to it would sit in the repo passing
+# nothing — `check` would report every suite green while silently running one
+# fewer than exists. Sorted so the run order is stable.
+SUITES = sorted(p.stem for p in (ROOT / "tests").glob("test_*.py"))
 
 GREEN, RED, BOLD, OFF = "\033[32m", "\033[31m", "\033[1m", "\033[0m"
 

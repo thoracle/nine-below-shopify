@@ -68,7 +68,12 @@
       });
       return origPush.apply(null,args);
     };
-    console.info('%c Nine Below %c reporting live to G-LD8107WMV2 as traffic_type=demo. Inspect NINEBELOW_EVENT_LOG.',
+    /* Read from the theme rather than restated here. An earlier version of this
+       line hardcoded `traffic_type=demo`, which stayed true only for as long as
+       the theme sent that to everybody. */
+    var t = window.NINEBELOW_TRAFFIC || {};
+    console.info('%c Nine Below %c reporting live to G-LD8107WMV2 as '+
+      (t.type||'?')+' traffic ('+(t.reason||'?')+'). Inspect NINEBELOW_EVENT_LOG.',
       'background:#0d1418;color:#e8eef2;padding:2px 6px;border-radius:2px','color:#8098a6');
   })();
 </script>
@@ -124,12 +129,13 @@
     var root = document.documentElement;
     var ab = window.NINEBELOW_AB || {};
     var flow = window.NINEBELOW_FLOW || {};
+    var traffic = window.NINEBELOW_TRAFFIC || {};
     var arms = Object.keys(ab.active || {})
       .filter(function(k){ return ab.active[k]; })
       .map(function(k){ return k + ':' + ab.active[k]; }).join(' ') || '(none)';
     var stored = [];
     try {
-      ['nb_ab_v1','nb_age_ok','nb_utm','nb_consent_v2','nb_flow'].forEach(function(k){
+      ['nb_ab_v1','nb_age_ok','nb_utm','nb_consent_v2','nb_flow','nb_qa'].forEach(function(k){
         if (localStorage.getItem(k) !== null) stored.push(k.replace('nb_',''));
       });
     } catch (e) { stored = ['<blocked>']; }
@@ -142,7 +148,12 @@
       ['age',      root.getAttribute('data-age') || 'gated'],
       ['arms',     arms],
       ['visits',   storageOk ? String(visits) : 'STORAGE BLOCKED'],
-      ['kept',     stored.join(' ') || '(nothing persisted)']
+      ['kept',     stored.join(' ') || '(nothing persisted)'],
+      /* Opening this panel is itself a QA act, so ?debug=1 marks the visit
+         internal and this row reads `internal / debug` on almost every run.
+         That is the correct answer, not a stuck readout — add `&qa=0` to see
+         the public path with the panel still open. */
+      ['traffic',  (traffic.type || '?') + ' / ' + (traffic.reason || '?')]
     ];
     var el = document.getElementById('nb-state');
     if (!el) return;

@@ -172,7 +172,59 @@
   window.dataLayer = window.dataLayer || [];
   function gtag(){ dataLayer.push(arguments); }
 
-  window.NINEBELOW_ANALYTICS_DEMO = false;gtag('consent', 'default', {
+  window.NINEBELOW_ANALYTICS_DEMO = false;window.NINEBELOW_TRAFFIC = (function () {
+    var KEY = 'nb_qa';
+
+    /* Exposed so this branch is testable. The suites are served from a fixed
+       origin and can never reach it by navigating, and `dev.py serve` runs on
+       localhost against a live measurement ID — the same hole the test harness
+       had until 5 Aug. Anchored, not substring: `localhost.evil.com` and
+       `mylocal.com` are ordinary hosts. */
+    function devHost(host, protocol) {
+      return protocol === 'file:' ||
+        host === 'localhost' || host === '127.0.0.1' ||
+        host === '::1' || host === '[::1]' || /(^|\.)local$/i.test(host);
+    }
+
+    var qs = new URLSearchParams(location.search);
+
+    /* An explicit opt-out wins over everything, including the host check, so
+       the public path can be exercised from a dev machine. */
+    if (qs.get('qa') === '0') {
+      try { localStorage.removeItem(KEY); } catch (e) {}
+      return { type: 'external', reason: 'opted out', devHost: devHost };
+    }
+
+    /* `ab` is a comma-separated list, so match the token rather than the whole
+       value: `?ab=reset,age_gate:a` is a QA URL whichever way the framework
+       chooses to read it. */
+    var ab = (qs.get('ab') || '').split(',');
+    var reason = '';
+    if (qs.get('qa') === '1') { reason = 'qa'; }
+    else if (qs.get('debug') === '1') { reason = 'debug'; }
+    else if (ab.indexOf('reset') !== -1) { reason = 'ab reset'; }
+    else if (qs.get('agegate') === 'reset') { reason = 'gate reset'; }
+
+    if (reason) {
+      /* Persisted, because a QA pass navigates away from the parameter on the
+         first click and the rest of the funnel has to stay marked. */
+      try { localStorage.setItem(KEY, reason); } catch (e) {}
+      return { type: 'internal', reason: reason, devHost: devHost };
+    }
+
+    var stored = null;
+    try { stored = localStorage.getItem(KEY); } catch (e) {}
+    if (stored) return { type: 'internal', reason: 'stored', devHost: devHost };
+
+    /* Deliberately NOT persisted: the hostname re-answers the question on every
+       load, and writing it would follow a tester to production through a
+       synced profile. */
+    if (devHost(location.hostname, location.protocol)) {
+      return { type: 'internal', reason: 'dev host', devHost: devHost };
+    }
+
+    return { type: 'external', reason: 'public', devHost: devHost };
+  })();gtag('consent', 'default', {
     'ad_storage': "granted",
     'ad_user_data': "granted",
     'ad_personalization': "granted",
@@ -184,15 +236,24 @@
   gtag('set', 'ads_data_redaction', "granted" === 'denied');
   gtag('set', 'url_passthrough', true);gtag('js', new Date());
 </script><script async src="https://www.googletagmanager.com/gtag/js?id=G-LD8107WMV2"></script><script>
-    gtag('config', "G-LD8107WMV2", {
-      'send_page_view': true,
-      'currency': "USD",
-      /* Marks this build's traffic so it can be excluded in GA4 under
-         Admin -> Data streams -> Configure tag settings -> Define internal
-         traffic. Set on demo and staging builds; leave blank on production.
-         Labelling has to happen at collection time — events that arrive
-         unmarked can never be separated out afterwards. */
-      'traffic_type': "demo"});
+    (function () {
+      var cfg = {
+        'send_page_view': true,
+        'currency': "USD"};
+      /* Set only for our own traffic, so GA4's internal-traffic filter has
+         something to exclude that is not everybody. The value has to match the
+         filter under Admin -> Data settings -> Data filters character for
+         character; a mismatch excludes nothing and reports no error, which is
+         how that filter sat dead from creation until 4 Aug.
+
+         Attached to the config call rather than to events, so it becomes a
+         default parameter for every event on this measurement ID. Per-event
+         would leave anything sent from a code path we forgot unmarked. */
+      if (window.NINEBELOW_TRAFFIC.type === 'internal') {
+        cfg.traffic_type = "demo";
+      }
+      gtag('config', "G-LD8107WMV2", cfg);
+    })();
   </script><script>
   (function () {
     'use strict';
@@ -667,7 +728,12 @@
       });
       return origPush.apply(null,args);
     };
-    console.info('%c Nine Below %c reporting live to G-LD8107WMV2 as traffic_type=demo. Inspect NINEBELOW_EVENT_LOG.',
+    /* Read from the theme rather than restated here. An earlier version of this
+       line hardcoded `traffic_type=demo`, which stayed true only for as long as
+       the theme sent that to everybody. */
+    var t = window.NINEBELOW_TRAFFIC || {};
+    console.info('%c Nine Below %c reporting live to G-LD8107WMV2 as '+
+      (t.type||'?')+' traffic ('+(t.reason||'?')+'). Inspect NINEBELOW_EVENT_LOG.',
       'background:#0d1418;color:#e8eef2;padding:2px 6px;border-radius:2px','color:#8098a6');
   })();
 </script>
@@ -1571,12 +1637,13 @@
     var root = document.documentElement;
     var ab = window.NINEBELOW_AB || {};
     var flow = window.NINEBELOW_FLOW || {};
+    var traffic = window.NINEBELOW_TRAFFIC || {};
     var arms = Object.keys(ab.active || {})
       .filter(function(k){ return ab.active[k]; })
       .map(function(k){ return k + ':' + ab.active[k]; }).join(' ') || '(none)';
     var stored = [];
     try {
-      ['nb_ab_v1','nb_age_ok','nb_utm','nb_consent_v2','nb_flow'].forEach(function(k){
+      ['nb_ab_v1','nb_age_ok','nb_utm','nb_consent_v2','nb_flow','nb_qa'].forEach(function(k){
         if (localStorage.getItem(k) !== null) stored.push(k.replace('nb_',''));
       });
     } catch (e) { stored = ['<blocked>']; }
@@ -1589,7 +1656,12 @@
       ['age',      root.getAttribute('data-age') || 'gated'],
       ['arms',     arms],
       ['visits',   storageOk ? String(visits) : 'STORAGE BLOCKED'],
-      ['kept',     stored.join(' ') || '(nothing persisted)']
+      ['kept',     stored.join(' ') || '(nothing persisted)'],
+      /* Opening this panel is itself a QA act, so ?debug=1 marks the visit
+         internal and this row reads `internal / debug` on almost every run.
+         That is the correct answer, not a stuck readout — add `&qa=0` to see
+         the public path with the panel still open. */
+      ['traffic',  (traffic.type || '?') + ' / ' + (traffic.reason || '?')]
     ];
     var el = document.getElementById('nb-state');
     if (!el) return;
