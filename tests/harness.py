@@ -53,6 +53,26 @@ class _Drop:
 
 DROP = _Drop()
 
+# Hosts the suites must never reach.
+#
+# The theme carries a real measurement ID and defaults consent to granted, so
+# every mount is a live GA4 hit unless something stops it. On 5 Aug a single
+# afternoon of test runs put 25 users and 427 events into the production
+# property — spoofed Instagram, Facebook and TikTok user agents included, since
+# the channel suite sets those deliberately. It buried that morning's real
+# device pass in synthetic traffic, and GA4 has no undo.
+#
+# The route handler only ever covered theme.test, so requests to Google went
+# straight out. Blocking them here makes the suites hermetic, which they should
+# have been from the start: a test that mutates production is not a test.
+BLOCKED_HOSTS = (
+    "**google-analytics.com/**",
+    "**googletagmanager.com/**",
+    "**analytics.google.com/**",
+    "**google.com/ccm/**",
+    "**doubleclick.net/**",
+)
+
 # Visibility, judged up the ancestor chain.
 #
 # Playwright's own is_visible() asks whether the element has a box, which is the
@@ -277,6 +297,8 @@ def mount(search="", ua=None, referrer=None, html=None, mutate=None,
                              body=body)
 
     context.route(f"{ORIGIN}/**", handler)
+    for pattern in BLOCKED_HOSTS:
+        context.route(pattern, lambda route, request: route.abort())
 
     context.add_init_script(VIS_FN)
 
