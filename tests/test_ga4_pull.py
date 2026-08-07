@@ -5,6 +5,7 @@ arithmetic that turns GA4 rows into arms has, and it is the half that can be
 wrong quietly: a conversion attributed to the wrong arm, or counted twice,
 produces a clean-looking verdict from broken inputs."""
 
+import re
 import sys
 from pathlib import Path
 
@@ -74,8 +75,7 @@ def ga4_rows_by_variant_string():
 def ga4_filtered(id_, arm):
     """What the NEW pull asks for: GA4 counts unique users matching the arm
     token, across every combination it appears in. One row, no dimensions."""
-    import re as _re
-    pattern = _re.compile(variants_regex(id_, arm))
+    pattern = re.compile(variants_regex(id_, arm))
     who = {p for p, labels in PEOPLE.items()
            if any(pattern.search(lb) for lb in labels)}
     return [row([], [str(len(who)), "0"])] if who else []
@@ -104,14 +104,13 @@ eq("and the arm only one person was in stays at one",
    conv_fix["bundle_offer"]["a"]["conversions"], 1)
 
 section("an arm is matched as a token, never as a substring")
-import re as _re  # noqa: E402
 ok("ig_strip:a does not match big_strip:a",
-   not _re.search(variants_regex("ig_strip", "a"), "big_strip:a"))
+   not re.search(variants_regex("ig_strip", "a"), "big_strip:a"))
 ok("hero:b does not match hero:bb",
-   not _re.search(variants_regex("hero", "b"), "age_gate:a|hero:bb"))
-ok("but it does match at the start", _re.search(variants_regex("hero", "b"), "hero:b|x:a"))
-ok("in the middle", _re.search(variants_regex("hero", "b"), "x:a|hero:b|y:c"))
-ok("and at the end", _re.search(variants_regex("hero", "b"), "x:a|hero:b"))
+   not re.search(variants_regex("hero", "b"), "age_gate:a|hero:bb"))
+ok("but it does match at the start", re.search(variants_regex("hero", "b"), "hero:b|x:a"))
+ok("in the middle", re.search(variants_regex("hero", "b"), "x:a|hero:b|y:c"))
+ok("and at the end", re.search(variants_regex("hero", "b"), "x:a|hero:b"))
 
 section("the request carries the arm filter, and asks for no dimensions")
 body = report_body("14daysAgo", "today", "begin_checkout", [],

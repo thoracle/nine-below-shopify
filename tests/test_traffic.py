@@ -19,7 +19,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from harness import done, eq, mount, ok, section, suite  # noqa: E402
+from harness import (done, eq, mount, ok, read_preview,  # noqa: E402
+                     section, suite)
 
 suite("traffic type")
 
@@ -117,6 +118,29 @@ with mount() as m:
            not m.eval(f"NINEBELOW_TRAFFIC.devHost({host!r}, 'https:')"))
     ok("a file:// page is internal",
        m.eval("NINEBELOW_TRAFFIC.devHost('', 'file:')"))
+
+section("a resolver that throws costs the label and nothing else")
+# The resolver decides a REPORTING LABEL — the least important thing in the
+# analytics head. It used to sit inside the bootstrap block, where a throw took
+# the Consent Mode defaults, `gtag('js')` and the whole config call with it: a
+# labelling failure would have cost every visitor's analytics, silently. It has
+# its own block now, and the config call reads it defensively.
+BREAK = "window.NINEBELOW_TRAFFIC = (function () {\n    throw new Error('boom');"
+with mount(search="?qa=1",
+           html=read_preview().replace(
+               "window.NINEBELOW_TRAFFIC = (function () {", BREAK, 1)) as m:
+    ok("the resolver did throw, so this is testing what it claims",
+       any("boom" in x for x in m.logs), " | ".join(m.logs[:3]))
+    ok("the global is genuinely absent",
+       m.eval("typeof window.NINEBELOW_TRAFFIC") == "undefined")
+    cfg = config(m)
+    ok("gtag('config') still ran", cfg is not None)
+    ok("unlabelled rather than mislabelled", "traffic_type" not in (cfg or {}))
+    ok("consent defaults still went out",
+       any(a[0] == "consent" for a in m.eval(
+           "() => [...(window.dataLayer || [])].map(a => Array.from(a))")))
+    ok("and the funnel still reports", len(m.events()) > 0)
+    ok("the age gate still holds", m.root_attr("data-age") != "ok")
 
 section("the resolver cannot break the page")
 with mount(search="?qa=1") as m:

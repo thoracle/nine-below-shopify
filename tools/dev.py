@@ -75,6 +75,14 @@ def test():
     if failed:
         print(f"\n{RED}{len(failed)} suite(s) failed{OFF}\n")
         return 1
+    # Discovery replaced a hardcoded list so a suite could not go unregistered.
+    # It introduced the same failure one level up: find nothing, run nothing,
+    # and report "all 0 suites passed" with exit 0. A green tick for having
+    # done nothing is the exact thing this file exists to prevent.
+    if not SUITES:
+        print(f"\n{RED}no suites found{OFF} — tests/test_*.py matched nothing.\n"
+              f"  Looked in: {ROOT / 'tests'}\n")
+        return 1
     print(f"\n{GREEN}all {len(SUITES)} suites passed{OFF}\n")
     return 0
 

@@ -172,59 +172,7 @@
   window.dataLayer = window.dataLayer || [];
   function gtag(){ dataLayer.push(arguments); }
 
-  window.NINEBELOW_ANALYTICS_DEMO = false;window.NINEBELOW_TRAFFIC = (function () {
-    var KEY = 'nb_qa';
-
-    /* Exposed so this branch is testable. The suites are served from a fixed
-       origin and can never reach it by navigating, and `dev.py serve` runs on
-       localhost against a live measurement ID — the same hole the test harness
-       had until 5 Aug. Anchored, not substring: `localhost.evil.com` and
-       `mylocal.com` are ordinary hosts. */
-    function devHost(host, protocol) {
-      return protocol === 'file:' ||
-        host === 'localhost' || host === '127.0.0.1' ||
-        host === '::1' || host === '[::1]' || /(^|\.)local$/i.test(host);
-    }
-
-    var qs = new URLSearchParams(location.search);
-
-    /* An explicit opt-out wins over everything, including the host check, so
-       the public path can be exercised from a dev machine. */
-    if (qs.get('qa') === '0') {
-      try { localStorage.removeItem(KEY); } catch (e) {}
-      return { type: 'external', reason: 'opted out', devHost: devHost };
-    }
-
-    /* `ab` is a comma-separated list, so match the token rather than the whole
-       value: `?ab=reset,age_gate:a` is a QA URL whichever way the framework
-       chooses to read it. */
-    var ab = (qs.get('ab') || '').split(',');
-    var reason = '';
-    if (qs.get('qa') === '1') { reason = 'qa'; }
-    else if (qs.get('debug') === '1') { reason = 'debug'; }
-    else if (ab.indexOf('reset') !== -1) { reason = 'ab reset'; }
-    else if (qs.get('agegate') === 'reset') { reason = 'gate reset'; }
-
-    if (reason) {
-      /* Persisted, because a QA pass navigates away from the parameter on the
-         first click and the rest of the funnel has to stay marked. */
-      try { localStorage.setItem(KEY, reason); } catch (e) {}
-      return { type: 'internal', reason: reason, devHost: devHost };
-    }
-
-    var stored = null;
-    try { stored = localStorage.getItem(KEY); } catch (e) {}
-    if (stored) return { type: 'internal', reason: 'stored', devHost: devHost };
-
-    /* Deliberately NOT persisted: the hostname re-answers the question on every
-       load, and writing it would follow a tester to production through a
-       synced profile. */
-    if (devHost(location.hostname, location.protocol)) {
-      return { type: 'internal', reason: 'dev host', devHost: devHost };
-    }
-
-    return { type: 'external', reason: 'public', devHost: devHost };
-  })();gtag('consent', 'default', {
+  window.NINEBELOW_ANALYTICS_DEMO = false;gtag('consent', 'default', {
     'ad_storage': "granted",
     'ad_user_data': "granted",
     'ad_personalization': "granted",
@@ -235,6 +183,59 @@
   });
   gtag('set', 'ads_data_redaction', "granted" === 'denied');
   gtag('set', 'url_passthrough', true);gtag('js', new Date());
+</script><script>window.NINEBELOW_TRAFFIC = (function () {
+  var KEY = 'nb_qa';
+
+  /* Exposed so this branch is testable. The suites are served from a fixed
+     origin and can never reach it by navigating, and `dev.py serve` runs on
+     localhost against a live measurement ID — the same hole the test harness
+     had until 5 Aug. Anchored, not substring: `localhost.evil.com` and
+     `mylocal.com` are ordinary hosts. */
+  function devHost(host, protocol) {
+    return protocol === 'file:' ||
+      host === 'localhost' || host === '127.0.0.1' ||
+      host === '::1' || host === '[::1]' || /(^|\.)local$/i.test(host);
+  }
+
+  var qs = new URLSearchParams(location.search);
+
+  /* An explicit opt-out wins over everything, including the host check, so
+     the public path can be exercised from a dev machine. */
+  if (qs.get('qa') === '0') {
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    return { type: 'external', reason: 'opted out', devHost: devHost };
+  }
+
+  /* `ab` is a comma-separated list, so match the token rather than the whole
+     value: `?ab=reset,age_gate:a` is a QA URL whichever way the framework
+     chooses to read it. */
+  var ab = (qs.get('ab') || '').split(',');
+  var reason = '';
+  if (qs.get('qa') === '1') { reason = 'qa'; }
+  else if (qs.get('debug') === '1') { reason = 'debug'; }
+  else if (ab.indexOf('reset') !== -1) { reason = 'ab reset'; }
+  else if (qs.get('agegate') === 'reset') { reason = 'gate reset'; }
+
+  if (reason) {
+    /* Persisted, because a QA pass navigates away from the parameter on the
+       first click and the rest of the funnel has to stay marked. */
+    try { localStorage.setItem(KEY, reason); } catch (e) {}
+    return { type: 'internal', reason: reason, devHost: devHost };
+  }
+
+  var stored = null;
+  try { stored = localStorage.getItem(KEY); } catch (e) {}
+  if (stored) return { type: 'internal', reason: 'stored', devHost: devHost };
+
+  /* Deliberately NOT persisted: the hostname re-answers the question on every
+     load, and writing it would follow a tester to production through a
+     synced profile. */
+  if (devHost(location.hostname, location.protocol)) {
+    return { type: 'internal', reason: 'dev host', devHost: devHost };
+  }
+
+  return { type: 'external', reason: 'public', devHost: devHost };
+})();
 </script><script async src="https://www.googletagmanager.com/gtag/js?id=G-LD8107WMV2"></script><script>
     (function () {
       var cfg = {
@@ -249,7 +250,10 @@
          Attached to the config call rather than to events, so it becomes a
          default parameter for every event on this measurement ID. Per-event
          would leave anything sent from a code path we forgot unmarked. */
-      if (window.NINEBELOW_TRAFFIC.type === 'internal') {
+      // `|| {}` is load-bearing: if the resolver above threw, the label is the
+      // thing to lose, not the whole config call. An unlabelled event is
+      // reportable; an event that was never sent is gone.
+      if ((window.NINEBELOW_TRAFFIC || {}).type === 'internal') {
         cfg.traffic_type = "demo";
       }
       gtag('config', "G-LD8107WMV2", cfg);

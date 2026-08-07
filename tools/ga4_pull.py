@@ -114,6 +114,7 @@ def variants_regex(id_, arm):
     """
     return r"(^|\|)" + re.escape(f"{id_}:{arm}") + r"(\||$)"
 
+
 def _bump(into, id_, arm, field, n):
     if not id_ or not arm or arm == "(not set)":
         return
@@ -288,7 +289,7 @@ def main(argv=None):
     weights = parse_weights(args.weights)
 
     session = authed_session()
-    exposures, conversions = {}, {}
+    exposures = {}
 
     try:
         tally_exposures(
