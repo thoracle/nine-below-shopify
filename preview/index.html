@@ -1668,7 +1668,18 @@
          internal and this row reads `internal / debug` on almost every run.
          That is the correct answer, not a stuck readout — add `&qa=0` to see
          the public path with the panel still open. */
-      ['traffic',  (traffic.type || '?') + ' / ' + (traffic.reason || '?')]
+      ['traffic',  (traffic.type || '?') + ' / ' + (traffic.reason || '?')],
+      /* Last, because it is the longest row and the ones above it are what the
+         pass reads at a glance. This one is for when they disagree.
+
+         `webview` above is a verdict; this is the evidence behind it. The
+         Facebook fragments are tested before Instagram's in landing-flow.liquid
+         and Meta ships shared fragments across its apps, so `webview: fb` inside
+         Instagram is a live possibility — and without the string that produced
+         it there is no way to tell which fragment matched, on a device with no
+         devtools. Finding that out and being unable to diagnose it costs a
+         second phone session. */
+      ['ua',       navigator.userAgent || '(none)']
     ];
     var el = document.getElementById('nb-state');
     if (!el) return;
