@@ -1,9 +1,15 @@
 """The GA4 tally, against synthetic rows.
 
-The network half of ga4_pull has never run against the live property. The
-arithmetic that turns GA4 rows into arms has, and it is the half that can be
-wrong quietly: a conversion attributed to the wrong arm, or counted twice,
-produces a clean-looking verdict from broken inputs."""
+The arithmetic that turns GA4 rows into arms is the half that can be wrong
+quietly: a conversion attributed to the wrong arm, or counted twice, produces a
+clean-looking verdict from broken inputs.
+
+These rows were synthetic-only until 6 Aug 2026, and being synthetic is exactly
+how they missed the real bug — every fixture gave an experiment a single
+`ab_variants` combination, so nothing double-counted. The first live pull
+returned a 150% conversion rate within seconds. The fixture that reproduces it
+is below, and it is the reason to distrust a suite that only ever sees data it
+invented."""
 
 import re
 import sys

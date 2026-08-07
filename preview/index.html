@@ -227,9 +227,12 @@
   try { stored = localStorage.getItem(KEY); } catch (e) {}
   if (stored) return { type: 'internal', reason: 'stored', devHost: devHost };
 
-  /* Deliberately NOT persisted: the hostname re-answers the question on every
-     load, and writing it would follow a tester to production through a
-     synced profile. */
+  /* Deliberately NOT persisted. The hostname re-answers the question on every
+     load, so a stored copy could only ever go stale — and it would outlive the
+     condition that set it, marking a build internal after it stopped being one.
+     (It could not leak to production: localStorage is origin-scoped, so this
+     key is unreachable from any other host. The reason to skip the write is
+     staleness, not leakage.) */
   if (devHost(location.hostname, location.protocol)) {
     return { type: 'internal', reason: 'dev host', devHost: devHost };
   }
