@@ -17,15 +17,17 @@ The account's email must be added under Admin -> Property Access Management.
 
 Requires: pip install google-auth requests
 
-Ported from tools/ga4-pull.mjs on 5 Aug 2026. The tally logic is exercised
-offline by tests/test_ga4_pull.py against synthetic rows; the network half
-has still never been run against the live property.
+Ported from tools/ga4-pull.mjs on 5 Aug 2026 (that file is gone; this project
+is Python only). First run against the live property on 6 Aug 2026 — which
+immediately returned a 150% conversion rate. See the tallying section for what
+that was and why the offline tests had not caught it.
 ========================================================================="""
 
 import argparse
 import datetime as _dt
 import json
 import os
+import re
 import sys
 
 ENDPOINT = "https://analyticsdata.googleapis.com/v1beta/properties/{}:runReport"
@@ -74,12 +76,43 @@ def build_parser():
 # off those two dimensions — no string parsing, no ambiguity.
 #
 # The conversion event carries no experiment_id; it only inherits the merged
-# `ab_variants` context ("age_gate:b|hero_image:a"). So the numerator has to
-# be recovered by splitting that list.
+# `ab_variants` context ("age_gate:b|hero_image:a"). So the numerator has to be
+# recovered from that list — and HOW is the whole problem.
 #
-# `totalUsers` throughout, never eventCount: a visitor who reloads five times
-# is one exposure, not five, and counting events would inflate the denominator
-# faster than the numerator and quietly depress every rate.
+# `totalUsers` throughout, never eventCount: a visitor who reloads five times is
+# one exposure, not five.
+#
+# But `totalUsers` is NOT ADDITIVE ACROSS ROWS, and that is what broke the first
+# live pull on 6 Aug 2026. The numerator used to be built by fetching every
+# distinct `ab_variants` string and summing the users of each row that mentioned
+# an arm. One person whose string changes between events — a channel resolving,
+# a new experiment enrolling them, an arm being forced — appears in two rows and
+# is counted twice:
+#
+#     totalUsers=2  age_gate:a|hero_headline:b|hero_image:b
+#     totalUsers=1  age_gate:a|bundle_offer:a|hero_headline:b|hero_image:b
+#     -> hero_headline:b credited with 3 conversions against 2 exposures
+#
+# The denominator cannot split that way — it is one row per experiment_id x
+# variant_id — so the numerator inflates relative to it and rates run past 100%.
+# A conversion rate over 1 is not merely wrong, it is undefined input to a Wilson
+# interval and a two-proportion z-test.
+#
+# So GA4 is asked to do the unique-user arithmetic itself: one filtered request
+# per (experiment, arm), each returning a single already-deduplicated number.
+# That is one request per arm rather than one in total, which is the price of an
+# answer that is correct.
+
+
+def variants_regex(id_, arm):
+    """Match `id:arm` as a TOKEN of the pipe-joined ab_variants list.
+
+    Never a substring test. `ig_strip:a` is a substring of `big_strip:a`, and
+    `hero:b` of `hero:bb` — the same trap the channel resolver documents at
+    length in snippets/landing-flow.liquid, where substring matching filed
+    `metal_bottle_promo` under Facebook because `meta` appeared in it.
+    """
+    return r"(^|\|)" + re.escape(f"{id_}:{arm}") + r"(\||$)"
 
 def _bump(into, id_, arm, field, n):
     if not id_ or not arm or arm == "(not set)":
@@ -106,41 +139,42 @@ def tally_exposures(rows, into):
               float(_cell(row, "metricValues", 0) or 0))
 
 
-def tally_conversions(rows, into):
-    """Numerator: split the pipe-joined list. One GA4 row feeds several
-    experiments, which is right — a visitor converts for every test they are
-    enrolled in at once."""
-    for row in rows:
-        label = _cell(row, "dimensionValues", 0) or ""
-        users = float(_cell(row, "metricValues", 0) or 0)
-        if not label or label == "(not set)" or not users:
-            continue
-        for part in label.split("|"):
-            id_, _, arm = part.partition(":")
-            _bump(into, id_, arm, "conversions", users)
+def arm_totals(rows):
+    """Read (users, revenue) off a metrics-only report — one row, no dimensions,
+    so GA4 has already deduplicated the users across whatever combinations of
+    `ab_variants` the filter matched. Zero rows means nobody converted, which is
+    a real answer and not a failure."""
+    if not rows:
+        return 0.0, 0.0
+    return (float(_cell(rows[0], "metricValues", 0) or 0),
+            float(_cell(rows[0], "metricValues", 1) or 0))
 
 
-def tally_revenue(rows, into):
-    """Revenue, for tests where the arms are priced differently.
+def collect_conversions(exposures, fetch):
+    """Numerator, one arm at a time.
 
-    `eventValue` is the sum of the `value` parameter, so this is real money over
-    the same rows the conversions came from — not users. It is summed rather
-    than counted for the same reason conversions are counted by user: a price
-    test is decided on revenue per visitor, and at three times the price an arm
-    can convert far worse and still be worth more. Without this the results view
-    can only offer a conversion-rate verdict, which for `bundle_offer` is the
-    wrong question.
+    `fetch(id_, arm)` returns that arm's report rows. Only arms that actually
+    have exposures are asked about — an arm nobody was enrolled in has no
+    denominator, so its conversions would have nothing to divide into.
 
-    Left at zero when the metric is absent. Zero revenue reads as "not measured"
-    in the results view, which is honest; a fabricated number would not be."""
-    for row in rows:
-        label = _cell(row, "dimensionValues", 0) or ""
-        value = float(_cell(row, "metricValues", 1) or 0)
-        if not label or label == "(not set)" or not value:
-            continue
-        for part in label.split("|"):
-            id_, _, arm = part.partition(":")
-            _bump(into, id_, arm, "revenue", value)
+    A visitor still converts for every test they are enrolled in at once: they
+    match the filter for each of those arms independently, which is the same
+    behaviour the old split had and the reason it was right about that much.
+    """
+    conversions = {}
+    for id_ in sorted(exposures):
+        for arm in sorted(exposures[id_]):
+            users, value = arm_totals(fetch(id_, arm))
+            _bump(conversions, id_, arm, "conversions", users)
+            _bump(conversions, id_, arm, "revenue", value)
+    return conversions
+
+
+def _count(n):
+    """A user count as a whole number where it is one, untouched otherwise —
+    a fractional count means something upstream is wrong and hiding it would be
+    the wrong kind of tidy."""
+    return int(n) if float(n).is_integer() else n
 
 
 def assemble(exposures, conversions, metric, weights, control=None):
@@ -168,8 +202,13 @@ def assemble(exposures, conversions, metric, weights, control=None):
                 # will cry wolf.
                 "weight": (declared[i] if declared and i < len(declared) else 0)
                           if declared else round(100 / len(arms)),
-                "exposures": exposures[id_][name]["exposures"],
-                "conversions": conversions.get(id_, {}).get(name, {}).get("conversions", 0),
+                # People, so a whole number. GA4 hands back "10" as a string and
+                # it is read as a float for the revenue path's sake; emitting
+                # `10.0` into the results view makes a count look like a
+                # measurement, and puts a stray `.0` in every pasted payload.
+                "exposures": _count(exposures[id_][name]["exposures"]),
+                "conversions": _count(
+                    conversions.get(id_, {}).get(name, {}).get("conversions", 0)),
                 "revenue": round(
                     conversions.get(id_, {}).get(name, {}).get("revenue", 0) * 100) / 100,
             } for i, name in enumerate(arms)],
@@ -179,18 +218,38 @@ def assemble(exposures, conversions, metric, weights, control=None):
 
 # ---- the network half ---------------------------------------------------
 
-def run_report(session, property_id, since, until, event_name, dimensions,
-               metrics=("totalUsers",)):
-    body = {
+def report_body(since, until, event_name, dimensions,
+                metrics=("totalUsers",), arm=None):
+    """The request. Split out from the POST so the filter can be asserted on
+    without a network round trip — the arm filter is the part that is easy to
+    get subtly wrong and impossible to notice afterwards."""
+    event = {"filter": {"fieldName": "eventName",
+                        "stringFilter": {"matchType": "EXACT", "value": event_name}}}
+    if arm is None:
+        dimension_filter = event
+    else:
+        id_, name = arm
+        dimension_filter = {"andGroup": {"expressions": [
+            event,
+            {"filter": {
+                "fieldName": "customEvent:ab_variants",
+                # PARTIAL_REGEXP, not CONTAINS. See variants_regex.
+                "stringFilter": {"matchType": "PARTIAL_REGEXP",
+                                 "value": variants_regex(id_, name)},
+            }},
+        ]}}
+    return {
         "dateRanges": [{"startDate": since, "endDate": until}],
         "dimensions": [{"name": n} for n in dimensions],
         "metrics": [{"name": n} for n in metrics],
-        "dimensionFilter": {
-            "filter": {"fieldName": "eventName",
-                       "stringFilter": {"matchType": "EXACT", "value": event_name}}
-        },
+        "dimensionFilter": dimension_filter,
         "limit": 5000,
     }
+
+
+def run_report(session, property_id, since, until, event_name, dimensions,
+               metrics=("totalUsers",), arm=None):
+    body = report_body(since, until, event_name, dimensions, metrics, arm)
     res = session.post(ENDPOINT.format(property_id), json=body, timeout=60)
     if res.status_code != 200:
         raise RuntimeError(_error_message(res))
@@ -236,13 +295,17 @@ def main(argv=None):
             run_report(session, args.property, since, until, "experiment_impression",
                        ["customEvent:experiment_id", "customEvent:variant_id"]),
             exposures)
-        # One request, two metrics. Asking twice would be two chances for the row
-        # sets to differ — a conversion counted against revenue that is not
-        # there, or the reverse — and reconciling that afterwards is guesswork.
-        conv_rows = run_report(session, args.property, since, until, args.metric,
-                               ["customEvent:ab_variants"], ["totalUsers", "eventValue"])
-        tally_conversions(conv_rows, conversions)
-        tally_revenue(conv_rows, conversions)
+
+        # One request per arm, each filtered to that arm and asking for no
+        # dimensions at all, so GA4 returns a single already-deduplicated
+        # figure. Both metrics come from the same request: asking twice would be
+        # two chances for the matched sets to differ — a conversion counted
+        # against revenue that is not there, or the reverse.
+        def fetch(id_, name):
+            return run_report(session, args.property, since, until, args.metric,
+                              [], ["totalUsers", "eventValue"], arm=(id_, name))
+
+        conversions = collect_conversions(exposures, fetch)
     except RuntimeError as e:
         msg = str(e)
         print(f"GA4 request failed: {msg}", file=sys.stderr)
